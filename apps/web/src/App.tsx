@@ -14,6 +14,13 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
   return token ? <>{children}</> : <Navigate to="/login" replace />;
 }
 
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const { token, user } = useAuthStore();
+  if (!token) return <Navigate to="/login" replace />;
+  if (user?.role !== 'ADMIN') return <Navigate to="/" replace />;
+  return <>{children}</>;
+}
+
 export default function App() {
   return (
     <Routes>
@@ -31,7 +38,14 @@ export default function App() {
         <Route path="phases/:phaseId" element={<PhasePage />} />
         <Route path="tasks/:taskId" element={<TaskPage />} />
         <Route path="content/:contentId" element={<ContentPage />} />
-        <Route path="tokens" element={<TokenUsagePage />} />
+        <Route
+          path="tokens"
+          element={
+            <AdminRoute>
+              <TokenUsagePage />
+            </AdminRoute>
+          }
+        />
       </Route>
     </Routes>
   );

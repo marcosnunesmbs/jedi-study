@@ -1,19 +1,28 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
-import { PrismaService } from '../../prisma/prisma.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Content } from '../../database/entities/content.entity';
+import { Phase } from '../../database/entities/phase.entity';
+import { AgentJob } from '../../database/entities/agent-job.entity';
 
 @Injectable()
 export class ContentService {
   constructor(
-    private readonly prisma: PrismaService,
+    @InjectRepository(Content)
+    private readonly contentRepository: Repository<Content>,
+    @InjectRepository(Phase)
+    private readonly phaseRepository: Repository<Phase>,
+    @InjectRepository(AgentJob)
+    private readonly agentJobRepository: Repository<AgentJob>,
     @InjectQueue('content-generation') private readonly contentQueue: Queue,
   ) {}
 
   async generateForPhase(phaseId: string, contentType: string = 'EXPLANATION', customPrompt?: string, userId?: string, topic?: string) {
-    const phase = await this.prisma.phase.findUnique({ 
+    const phase = await this.phaseRepository.findOne({ 
       where: { id: phaseId },
-      include: { studyPath: { select: { userId: true } } }
+      relations: ['studyPath'],
     });
     
     if (!phase || (userId && phase.studyPath.userId !== userId)) {
@@ -26,21 +35,21 @@ export class ContentService {
         ? `Custom: ${customPrompt.replace(/\n/g, ' ').slice(0, 120)}${customPrompt.length > 120 ? '...' : ''}` 
         : `${contentType} — ${phase.title}`;
 
-    const content = await this.prisma.content.create({
-      data: {
-        phaseId,
-        topic,
-        type: contentType,
-        title: contentTitle,
-        body: '',
-        status: 'PENDING',
-      },
+    const content = this.contentRepository.create({
+      phaseId,
+      topic,
+      type: contentType,
+      title: contentTitle,
+      body: '',
+      status: 'PENDING',
     });
+    await this.contentRepository.save(content);
 
     const job = await this.contentQueue.add(
       'generate',
       {
         contentId: content.id,
+        userId: phase.studyPath.userId,
         phaseId,
         phaseTitle: phase.title,
         phaseObjectives: typeof phase.objectives === 'string' ? JSON.parse(phase.objectives || '[]') : phase.objectives,
@@ -55,27 +64,26 @@ export class ContentService {
       },
     );
 
-    await this.prisma.content.update({
-      where: { id: content.id },
-      data: { jobId: String(job.id) },
-    });
+    await this.contentRepository.update(
+      { id: content.id },
+      { jobId: String(job.id) },
+    );
 
-    await this.prisma.agentJob.create({
-      data: {
-        bullJobId: `content-generation:${job.id}`,
-        type: 'CONTENT_GEN',
-        status: 'QUEUED',
-        referenceId: content.id,
-      },
+    const agentJob = this.agentJobRepository.create({
+      bullJobId: `content-generation:${job.id}`,
+      type: 'CONTENT_GEN',
+      status: 'QUEUED',
+      referenceId: content.id,
     });
+    await this.agentJobRepository.save(agentJob);
 
     return { contentId: content.id, jobId: String(job.id) };
   }
 
   async findOne(id: string, userId: string) {
-    const content = await this.prisma.content.findUnique({ 
+    const content = await this.contentRepository.findOne({ 
       where: { id },
-      include: { phase: { include: { studyPath: { select: { userId: true } } } } }
+      relations: ['phase', 'phase.studyPath'],
     });
 
     if (!content || content.phase.studyPath.userId !== userId) {
@@ -85,5 +93,9 @@ export class ContentService {
     delete (content.phase as any).studyPath;
 
     return content;
+  }
+
+  async findById(id: string) {
+    return this.contentRepository.findOne({ where: { id } });
   }
 }

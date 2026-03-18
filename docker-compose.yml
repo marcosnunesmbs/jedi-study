@@ -63,7 +63,6 @@ services:
     ports:
       - "3001:3000"
     volumes:
-      - ./apps/api/prisma:/app/apps/api/prisma
       - ./apps/api/src:/app/apps/api/src
       - ./packages/shared/src:/app/packages/shared/src
     depends_on:
@@ -73,8 +72,7 @@ services:
         condition: service_healthy
       agents:
         condition: service_healthy
-    command: >
-      sh -c "npx prisma migrate deploy && node dist/main"
+    command: node dist/main
 
   web:
     build:

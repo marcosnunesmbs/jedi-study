@@ -1,17 +1,25 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Phase } from '../../database/entities/phase.entity';
+import { StudyPath } from '../../database/entities/study-path.entity';
 
 @Injectable()
 export class PhasesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    @InjectRepository(Phase)
+    private readonly phaseRepository: Repository<Phase>,
+    @InjectRepository(StudyPath)
+    private readonly studyPathRepository: Repository<StudyPath>,
+  ) {}
 
   async findOne(id: string, userId: string) {
-    const phase = await this.prisma.phase.findUnique({
+    const phase = await this.phaseRepository.findOne({
       where: { id },
-      include: {
-        studyPath: { select: { userId: true } },
-        tasks: { orderBy: { order: 'asc' } },
-        contents: { orderBy: { createdAt: 'desc' } },
+      relations: ['studyPath', 'tasks', 'contents'],
+      order: {
+        tasks: { order: 'ASC' },
+        contents: { createdAt: 'DESC' },
       },
     });
 
@@ -19,8 +27,7 @@ export class PhasesService {
       throw new NotFoundException('Phase not found');
     }
     
-    // Remove the studyPath object before returning if we don't want to leak it, 
-    // but returning it is fine as it just has userId. We'll leave it or delete it.
+    // Remove the studyPath object before returning
     delete (phase as any).studyPath;
 
     if (phase.topics && typeof phase.topics === 'string') {
@@ -31,40 +38,48 @@ export class PhasesService {
       }
     }
 
+    if (phase.objectives && typeof phase.objectives === 'string') {
+      try {
+        (phase as any).objectives = JSON.parse(phase.objectives);
+      } catch (e) {
+        (phase as any).objectives = [];
+      }
+    }
+
     return phase;
   }
 
   async tryUnlockNext(studyPathId: string, completedPhaseOrder: number) {
-    const nextPhase = await this.prisma.phase.findFirst({
+    const nextPhase = await this.phaseRepository.findOne({
       where: { studyPathId, order: completedPhaseOrder + 1 },
     });
 
     if (nextPhase && nextPhase.status === 'LOCKED') {
-      await this.prisma.phase.update({
-        where: { id: nextPhase.id },
-        data: { status: 'ACTIVE' },
-      });
+      await this.phaseRepository.update(
+        { id: nextPhase.id },
+        { status: 'ACTIVE' },
+      );
 
       // Check if all phases are complete
-      const allPhases = await this.prisma.phase.findMany({
+      const allPhases = await this.phaseRepository.find({
         where: { studyPathId },
-        select: { status: true },
+        select: ['status'],
       });
 
       const allDone = allPhases.every((p) => p.status === 'COMPLETED');
       if (allDone) {
-        await this.prisma.studyPath.update({
-          where: { id: studyPathId },
-          data: { status: 'ARCHIVED' },
-        });
+        await this.studyPathRepository.update(
+          { id: studyPathId },
+          { status: 'ARCHIVED' },
+        );
       }
     }
   }
 
   async markCompleted(id: string) {
-    return this.prisma.phase.update({
-      where: { id },
-      data: { status: 'COMPLETED' },
-    });
+    return this.phaseRepository.update(
+      { id },
+      { status: 'COMPLETED' },
+    );
   }
 }

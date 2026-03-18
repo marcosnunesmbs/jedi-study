@@ -1,47 +1,60 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Subject } from '../../database/entities/subject.entity';
 
 @Injectable()
 export class SubjectsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    @InjectRepository(Subject)
+    private readonly subjectRepository: Repository<Subject>,
+  ) {}
 
   async findAll(userId: string) {
-    return this.prisma.subject.findMany({
+    return this.subjectRepository.find({
       where: { userId },
-      include: {
-        studyPaths: {
-          where: { isActive: true },
-          select: { id: true, status: true, totalPhases: true, version: true },
-        },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+      relations: ['studyPaths'],
+      order: { createdAt: 'DESC' },
+    }).then(subjects => subjects.map(s => ({
+      ...s,
+      studyPaths: s.studyPaths.filter(p => p.isActive).map(p => ({
+        id: p.id,
+        status: p.status,
+        totalPhases: p.totalPhases,
+        version: p.version,
+      }))
+    })));
   }
 
   async findOne(id: string, userId: string) {
-    const subject = await this.prisma.subject.findFirst({
+    const subject = await this.subjectRepository.findOne({
       where: { id, userId },
-      include: {
+      relations: ['studyPaths', 'studyPaths.phases'],
+      order: {
         studyPaths: {
-          where: { isActive: true },
-          include: {
-            phases: {
-              select: {
-                id: true,
-                order: true,
-                title: true,
-                status: true,
-                estimatedHours: true,
-              },
-              orderBy: { order: 'asc' },
-            },
+          phases: {
+            order: 'ASC',
           },
         },
       },
     });
 
     if (!subject) throw new NotFoundException('Subject not found');
-    return subject;
+
+    // Manually filter active paths and pick only needed phase fields to match prisma select
+    return {
+      ...subject,
+      studyPaths: subject.studyPaths.filter(p => p.isActive).map(p => ({
+        ...p,
+        phases: p.phases.map(ph => ({
+          id: ph.id,
+          order: ph.order,
+          title: ph.title,
+          status: ph.status,
+          estimatedHours: ph.estimatedHours,
+        }))
+      }))
+    };
   }
 
   async create(userId: string, data: {
@@ -50,19 +63,19 @@ export class SubjectsService {
     skillLevel?: string;
     goals?: string[];
   }) {
-    return this.prisma.subject.create({
-      data: {
-        userId,
-        title: data.title,
-        description: data.description,
-        skillLevel: data.skillLevel || 'BEGINNER',
-        goals: JSON.stringify(data.goals || []),
-      },
+    const subject = this.subjectRepository.create({
+      userId,
+      title: data.title,
+      description: data.description,
+      skillLevel: data.skillLevel || 'BEGINNER',
+      goals: JSON.stringify(data.goals || []),
     });
+    return this.subjectRepository.save(subject);
   }
 
   async delete(id: string, userId: string) {
-    await this.findOne(id, userId);
-    return this.prisma.subject.delete({ where: { id } });
+    const subject = await this.subjectRepository.findOne({ where: { id, userId } });
+    if (!subject) throw new NotFoundException('Subject not found');
+    return this.subjectRepository.remove(subject);
   }
 }

@@ -31,13 +31,14 @@ export class AuthService {
   }
 
   private buildResponse(user: any) {
-    const payload = { sub: user.id, email: user.email };
+    const payload = { sub: user.id, email: user.email, role: user.role };
     return {
       accessToken: this.jwt.sign(payload),
       user: {
         id: user.id,
         email: user.email,
         displayName: user.displayName,
+        role: user.role,
       },
     };
   }

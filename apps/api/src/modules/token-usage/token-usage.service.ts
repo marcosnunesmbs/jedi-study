@@ -1,9 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PrismaService } from '../../prisma/prisma.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, Between } from 'typeorm';
+import { TokenUsage } from '../../database/entities/token-usage.entity';
 import type { TokenUsageInfo } from '@jedi-study/shared';
 
 export interface RecordTokenUsageDto {
+  userId: string;
   agentType: string;
   referenceId: string;
   referenceType: string;
@@ -13,7 +16,8 @@ export interface RecordTokenUsageDto {
 @Injectable()
 export class TokenUsageService {
   constructor(
-    private readonly prisma: PrismaService,
+    @InjectRepository(TokenUsage)
+    private readonly tokenUsageRepository: Repository<TokenUsage>,
     private readonly config: ConfigService,
   ) {}
 
@@ -25,22 +29,24 @@ export class TokenUsageService {
     const outputCost = (dto.usage.outputTokens / 1000000) * costOutput1M;
     const totalCost = inputCost + outputCost;
 
-    return this.prisma.tokenUsage.create({
-      data: {
-        agentType: dto.agentType,
-        referenceId: dto.referenceId,
-        referenceType: dto.referenceType,
-        model: dto.usage.model,
-        inputTokens: dto.usage.inputTokens,
-        outputTokens: dto.usage.outputTokens,
-        totalTokens: dto.usage.totalTokens,
-        estimatedCostUsd: totalCost || dto.usage.estimatedCostUsd || 0,
-        durationMs: dto.usage.durationMs,
-      },
+    const tokenUsage = this.tokenUsageRepository.create({
+      userId: dto.userId,
+      agentType: dto.agentType,
+      referenceId: dto.referenceId,
+      referenceType: dto.referenceType,
+      model: dto.usage.model,
+      inputTokens: dto.usage.inputTokens,
+      outputTokens: dto.usage.outputTokens,
+      totalTokens: dto.usage.totalTokens,
+      estimatedCostUsd: totalCost || dto.usage.estimatedCostUsd || 0,
+      durationMs: dto.usage.durationMs,
     });
+
+    return this.tokenUsageRepository.save(tokenUsage);
   }
 
   async findAll(filters?: {
+    userId?: string;
     agentType?: string;
     from?: Date;
     to?: Date;
@@ -48,28 +54,28 @@ export class TokenUsageService {
     offset?: number;
   }) {
     const where: any = {};
+    if (filters?.userId) where.userId = filters.userId;
     if (filters?.agentType) where.agentType = filters.agentType;
     if (filters?.from || filters?.to) {
-      where.createdAt = {};
-      if (filters.from) where.createdAt.gte = filters.from;
-      if (filters.to) where.createdAt.lte = filters.to;
+      where.createdAt = Between(
+        filters.from || new Date(0),
+        filters.to || new Date(),
+      );
     }
 
-    const [total, records] = await Promise.all([
-      this.prisma.tokenUsage.count({ where }),
-      this.prisma.tokenUsage.findMany({
-        where,
-        orderBy: { createdAt: 'desc' },
-        take: filters?.limit || 50,
-        skip: filters?.offset || 0,
-      }),
-    ]);
+    const [records, total] = await this.tokenUsageRepository.findAndCount({
+      where,
+      order: { createdAt: 'DESC' },
+      take: filters?.limit || 50,
+      skip: filters?.offset || 0,
+    });
 
     return { total, records };
   }
 
-  async getSummary() {
-    const all = await this.prisma.tokenUsage.findMany();
+  async getSummary(userId?: string) {
+    const where = userId ? { userId } : {};
+    const all = await this.tokenUsageRepository.find({ where });
 
     const byAgent: Record<string, {
       calls: number;

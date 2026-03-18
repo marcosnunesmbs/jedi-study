@@ -7,7 +7,6 @@ services:
     working_dir: /app/apps/api
     volumes:
       - ./apps/api/src:/app/apps/api/src
-      - ./apps/api/prisma:/app/apps/api/prisma
       - ./packages/shared/src:/app/packages/shared/src
     command: pnpm run start:dev
     environment:

@@ -5,7 +5,6 @@ import { IsOptional, IsEnum, IsString } from 'class-validator';
 import { Observable, Subject, interval } from 'rxjs';
 import { map, takeUntil } from 'rxjs/operators';
 import { ContentService } from './content.service';
-import { PrismaService } from '../../prisma/prisma.service';
 import type { Response } from 'express';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
@@ -27,7 +26,6 @@ class GenerateContentDto {
 export class ContentController {
   constructor(
     private readonly content: ContentService,
-    private readonly prisma: PrismaService,
   ) {}
 
   @Post('phases/:phaseId/content/generate')
@@ -69,7 +67,7 @@ export class ContentController {
 
     // Poll DB for completion
     const poll = setInterval(async () => {
-      const content = await this.prisma.content.findUnique({ where: { id } });
+      const content = await this.content.findById(id);
       if (!content) {
         send('error', { message: 'Content not found' });
         clearInterval(poll);

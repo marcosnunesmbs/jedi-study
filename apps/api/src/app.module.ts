@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { BullModule } from '@nestjs/bull';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import configuration from './config/configuration';
-import { PrismaModule } from './prisma/prisma.module';
+import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { SubjectsModule } from './modules/subjects/subjects.module';
@@ -15,6 +16,7 @@ import { AgentsModule } from './modules/agents/agents.module';
 import { TokenUsageModule } from './modules/token-usage/token-usage.module';
 import { QueuesModule } from './queues/queues.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
+import { InitializationService } from './common/services/initialization.service';
 
 @Module({
   imports: [
@@ -22,12 +24,21 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
       isGlobal: true,
       load: [configuration],
     }),
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        type: 'mysql',
+        url: config.get('database.url'),
+        autoLoadEntities: true,
+        synchronize: true, // Equivalent to prisma migrate dev in dev
+      }),
+    }),
     BullModule.forRootAsync({
       useFactory: () => ({
         redis: process.env.REDIS_URL || 'redis://localhost:6379',
       }),
     }),
-    PrismaModule,
+    DatabaseModule,
     AuthModule,
     UsersModule,
     SubjectsModule,
@@ -44,6 +55,7 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
     },
+    InitializationService,
   ],
 })
 export class AppModule {}

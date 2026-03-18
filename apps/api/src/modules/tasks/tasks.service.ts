@@ -1,75 +1,90 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
-import { PrismaService } from '../../prisma/prisma.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Task } from '../../database/entities/task.entity';
+import { Submission } from '../../database/entities/submission.entity';
+import { Analysis } from '../../database/entities/analysis.entity';
+import { AgentJob } from '../../database/entities/agent-job.entity';
 
 @Injectable()
 export class TasksService {
   constructor(
-    private readonly prisma: PrismaService,
+    @InjectRepository(Task)
+    private readonly taskRepository: Repository<Task>,
+    @InjectRepository(Submission)
+    private readonly submissionRepository: Repository<Submission>,
+    @InjectRepository(Analysis)
+    private readonly analysisRepository: Repository<Analysis>,
+    @InjectRepository(AgentJob)
+    private readonly agentJobRepository: Repository<AgentJob>,
     @InjectQueue('task-analysis') private readonly analysisQueue: Queue,
   ) {}
 
   async findOne(id: string, userId: string) {
-    const task = await this.prisma.task.findUnique({
+    const task = await this.taskRepository.findOne({
       where: { id },
-      include: {
-        phase: { include: { studyPath: { select: { userId: true } } } },
-        submissions: {
-          orderBy: { attempt: 'desc' },
-          take: 1,
-          include: { analysis: true },
-        },
+      relations: ['phase', 'phase.studyPath', 'submissions', 'submissions.analysis'],
+      order: {
+        submissions: { attempt: 'DESC' },
       },
     });
 
     if (!task || task.phase.studyPath.userId !== userId) throw new NotFoundException('Task not found');
 
+    // Pick only the latest submission to match prisma behavior
+    const latestSubmission = task.submissions[0];
+    const taskWithLatest = {
+      ...task,
+      submissions: latestSubmission ? [latestSubmission] : [],
+    };
+
     // Parse analysis JSON if it exists
-    if (task.submissions[0]?.analysis) {
-      const a = task.submissions[0].analysis;
-      (task.submissions[0].analysis as any).strengths = typeof a.strengths === 'string' ? JSON.parse(a.strengths || '[]') : a.strengths;
-      (task.submissions[0].analysis as any).improvements = typeof a.improvements === 'string' ? JSON.parse(a.improvements || '[]') : a.improvements;
+    if (latestSubmission?.analysis) {
+      const a = latestSubmission.analysis;
+      (latestSubmission.analysis as any).strengths = typeof a.strengths === 'string' ? JSON.parse(a.strengths || '[]') : a.strengths;
+      (latestSubmission.analysis as any).improvements = typeof a.improvements === 'string' ? JSON.parse(a.improvements || '[]') : a.improvements;
     }
 
-    delete (task.phase as any).studyPath;
+    delete (taskWithLatest.phase as any).studyPath;
 
-    return task;
+    return taskWithLatest;
   }
 
   async submit(taskId: string, content: string, contentType: string = 'TEXT', userId: string) {
-    const task = await this.prisma.task.findUnique({
+    const task = await this.taskRepository.findOne({
       where: { id: taskId },
-      include: { phase: { include: { studyPath: { select: { userId: true } } } } },
+      relations: ['phase', 'phase.studyPath'],
     });
     if (!task || task.phase.studyPath.userId !== userId) throw new NotFoundException('Task not found');
 
-    const lastSubmission = await this.prisma.submission.findFirst({
+    const lastSubmission = await this.submissionRepository.findOne({
       where: { taskId },
-      orderBy: { attempt: 'desc' },
+      order: { attempt: 'DESC' },
     });
 
     const attempt = (lastSubmission?.attempt || 0) + 1;
 
-    const submission = await this.prisma.submission.create({
-      data: {
-        taskId,
-        attempt,
-        content,
-        contentType,
-        status: 'PENDING',
-      },
+    const submission = this.submissionRepository.create({
+      taskId,
+      attempt,
+      content,
+      contentType,
+      status: 'PENDING',
     });
+    await this.submissionRepository.save(submission);
 
-    await this.prisma.task.update({
-      where: { id: taskId },
-      data: { status: 'SUBMITTED' },
-    });
+    await this.taskRepository.update(
+      { id: taskId },
+      { status: 'SUBMITTED' },
+    );
 
     const job = await this.analysisQueue.add(
       'analyze',
       {
         submissionId: submission.id,
+        userId: task.phase.studyPath.userId,
         taskId: task.id,
         phaseId: task.phaseId,
         studyPathId: task.phase.studyPathId,
@@ -89,46 +104,39 @@ export class TasksService {
       },
     );
 
-    await this.prisma.agentJob.create({
-      data: {
-        bullJobId: `task-analysis:${job.id}`,
-        type: task.type === 'PROJECT' ? 'PROJECT_ANALYZER' : 'TASK_ANALYZER',
-        status: 'QUEUED',
-        referenceId: submission.id,
-      },
+    const agentJob = this.agentJobRepository.create({
+      bullJobId: `task-analysis:${job.id}`,
+      type: task.type === 'PROJECT' ? 'PROJECT_ANALYZER' : 'TASK_ANALYZER',
+      status: 'QUEUED',
+      referenceId: submission.id,
     });
+    await this.agentJobRepository.save(agentJob);
 
     return { submissionId: submission.id, jobId: String(job.id) };
   }
 
   async getSubmissionStatus(submissionId: string, userId: string) {
-    const submission = await this.prisma.submission.findUnique({
+    const submission = await this.submissionRepository.findOne({
       where: { id: submissionId },
-      include: {
-        task: { include: { phase: { include: { studyPath: { select: { userId: true } } } } } }
-      }
+      relations: ['task', 'task.phase', 'task.phase.studyPath'],
     });
 
     if (!submission || submission.task.phase.studyPath.userId !== userId) {
       throw new NotFoundException('Submission not found');
     }
 
-    const job = await this.prisma.agentJob.findFirst({
+    const job = await this.agentJobRepository.findOne({
       where: { referenceId: submissionId },
-      orderBy: { createdAt: 'desc' },
+      order: { createdAt: 'DESC' },
     });
 
     return { id: submission.id, status: submission.status, score: submission.score, passed: submission.passed, job };
   }
 
   async getAnalysis(submissionId: string, userId: string) {
-    const analysis = await this.prisma.analysis.findUnique({
+    const analysis = await this.analysisRepository.findOne({
       where: { submissionId },
-      include: {
-        submission: {
-          include: { task: { include: { phase: { include: { studyPath: { select: { userId: true } } } } } } },
-        },
-      },
+      relations: ['submission', 'submission.task', 'submission.task.phase', 'submission.task.phase.studyPath'],
     });
 
     if (!analysis || analysis.submission.task.phase.studyPath.userId !== userId) {
@@ -144,8 +152,8 @@ export class TasksService {
       passed: analysis.passed,
       rawOutput: analysis.rawOutput,
       createdAt: analysis.createdAt,
-      strengths: JSON.parse(analysis.strengths || '[]'),
-      improvements: JSON.parse(analysis.improvements || '[]'),
+      strengths: typeof analysis.strengths === 'string' ? JSON.parse(analysis.strengths || '[]') : analysis.strengths,
+      improvements: typeof analysis.improvements === 'string' ? JSON.parse(analysis.improvements || '[]') : analysis.improvements,
       submission: {
         taskId: analysis.submission.taskId,
         attempt: analysis.submission.attempt,

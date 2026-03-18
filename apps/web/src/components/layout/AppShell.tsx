@@ -61,10 +61,12 @@ export default function AppShell() {
             <LayoutDashboard size={20} />
             <span>Dashboard</span>
           </Link>
-          <Link to="/tokens" className={`nav-link ${isActive('/tokens') ? 'active' : ''}`} onClick={handleNavClick}>
-            <Coins size={20} />
-            <span>Token Usage</span>
-          </Link>
+          {user?.role === 'ADMIN' && (
+            <Link to="/tokens" className={`nav-link ${isActive('/tokens') ? 'active' : ''}`} onClick={handleNavClick}>
+              <Coins size={20} />
+              <span>Token Usage</span>
+            </Link>
+          )}
         </nav>
 
         <div className="sidebar-footer">
