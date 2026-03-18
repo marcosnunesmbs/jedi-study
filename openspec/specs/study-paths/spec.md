@@ -16,13 +16,12 @@ O que está **fora do escopo**:
 ## Requirements
 
 ### Requirement: Generate Study Path
-The system MUST allow a user to trigger the generation of a study path for one of their subjects.
+The system MUST allow a user to trigger the generation of a study path for one of their subjects, and the resulting path MUST include structured topics within each phase.
 
-#### Scenario: Geração iniciada
-- GIVEN um usuário autenticado e um assunto válido que lhe pertence
-- WHEN o usuário solicita a geração da trilha
-- THEN o sistema inicia o processo de geração (enfileira a tarefa)
-- AND retorna um identificador ou status indicando que o processamento começou
+#### Scenario: Geração com tópicos
+- **GIVEN** um usuário autenticado e um assunto válido
+- **WHEN** o usuário solicita a geração da trilha
+- **THEN** o sistema gera uma trilha onde cada fase contém uma lista de tópicos lógicos relacionados aos seus objetivos
 
 ### Requirement: Get Generation Status
 The system MUST provide the current status of the study path generation process.
@@ -33,12 +32,12 @@ The system MUST provide the current status of the study path generation process.
 - THEN o sistema retorna o estado atual (ex: PENDING, PROCESSING, COMPLETED, FAILED)
 
 ### Requirement: Get Active Study Path
-The system MUST return the active study path for a given subject.
+The system MUST return the active study path (including its phases and topics) for a given subject.
 
-#### Scenario: Trilha existente
-- GIVEN um assunto com uma trilha de estudos já gerada e ativa
-- WHEN o usuário solicita a trilha ativa do assunto
-- THEN o sistema retorna a trilha e suas fases associadas
+#### Scenario: Trilha com tópicos
+- **GIVEN** um assunto com uma trilha gerada com tópicos
+- **WHEN** o usuário solicita a trilha ativa
+- **THEN** o sistema retorna a trilha e as fases contendo suas respectivas listas de tópicos
 
 #### Scenario: Trilha inexistente
 - GIVEN um assunto sem trilha ativa
