@@ -78,6 +78,7 @@ model Phase {
   title          String
   description    String  @db.Text
   objectives     String @db.Text // JSON-encoded string[]
+  topics         String @db.Text // JSON-encoded string[]
   status         String  @default("LOCKED") // PhaseStatus: LOCKED | ACTIVE | COMPLETED
   estimatedHours Int     @default(0)
 
@@ -153,6 +154,7 @@ model Content {
   phaseId String
   phase   Phase  @relation(fields: [phaseId], references: [id], onDelete: Cascade)
 
+  topic  String?
   type   String @default("EXPLANATION") // ContentBlock: EXPLANATION | EXAMPLE | SUMMARY | RESOURCE_LIST
   title  String
   body   String @db.Text

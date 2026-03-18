@@ -22,6 +22,7 @@ class PathPhase(BaseModel):
     title: str
     description: str
     objectives: List[str] = Field(..., min_length=1)
+    topics: List[str] = Field(..., min_length=1)
     estimatedHours: int = Field(..., ge=1)
     tasks: List[PathTask] = Field(..., min_length=1)
 

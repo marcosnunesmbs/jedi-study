@@ -23,6 +23,7 @@ export const PathPhaseSchema = z.object({
   title: z.string().min(1),
   description: z.string().min(1),
   objectives: z.array(z.string().min(1)).min(1),
+  topics: z.array(z.string().min(1)).min(1),
   estimatedHours: z.number().int().min(1),
   tasks: z.array(PathTaskSchema).min(1),
 });

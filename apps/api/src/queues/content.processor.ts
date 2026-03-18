@@ -12,6 +12,7 @@ interface ContentGenerationJob {
   phaseObjectives: string[];
   contentType: string;
   customPrompt?: string;
+  topic?: string;
 }
 
 @Processor('content-generation')
@@ -26,7 +27,7 @@ export class ContentProcessor {
 
   @Process('generate')
   async handleGenerate(job: Job<ContentGenerationJob>) {
-    const { contentId, phaseTitle, phaseObjectives, contentType, customPrompt } = job.data;
+    const { contentId, phaseTitle, phaseObjectives, contentType, customPrompt, topic } = job.data;
 
     this.logger.log(`Generating content=${contentId}`);
 
@@ -46,6 +47,7 @@ export class ContentProcessor {
         phaseObjectives,
         contentType,
         customPrompt,
+        topicTitle: topic,
       });
 
       // Record token usage

@@ -66,6 +66,7 @@ export class PathGenerationProcessor {
               title: phaseData.title,
               description: phaseData.description,
               objectives: JSON.stringify(phaseData.objectives),
+              topics: JSON.stringify(phaseData.topics),
               estimatedHours: phaseData.estimatedHours,
               status: phaseData.order === 1 ? 'ACTIVE' : 'LOCKED',
             },

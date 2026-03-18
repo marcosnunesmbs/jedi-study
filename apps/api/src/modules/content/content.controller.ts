@@ -17,6 +17,10 @@ class GenerateContentDto {
   @IsOptional()
   @IsString()
   customPrompt?: string;
+
+  @IsOptional()
+  @IsString()
+  topic?: string;
 }
 
 @Controller()
@@ -32,7 +36,7 @@ export class ContentController {
     @Body() dto: GenerateContentDto,
     @CurrentUser() user: any
   ) {
-    return this.content.generateForPhase(phaseId, dto.contentType, dto.customPrompt, user.id);
+    return this.content.generateForPhase(phaseId, dto.contentType, dto.customPrompt, user.id, dto.topic);
   }
 
   @Get('content/:id')

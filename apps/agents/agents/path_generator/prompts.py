@@ -6,8 +6,9 @@ Your role is to create highly structured, practical study plans that take a lear
 For each plan you generate, you must:
 0. DEEP THINKING: Carefully consider the subject, the learner's current skill level, their goals, and any provided context to design an effective learning path. This is critical for creating a plan that is both achievable and impactful.
 1. Structure learning in progressive phases (thinking about the goals and subject and the learner's current level to determine the right numbers of phases and their focus)
-2. Each phase should have concrete, actionable tasks
-3. Include both theoretical and practical tasks
+2. Each phase should be broken down into specific topics (granularity for content generation)
+3. Each phase should have concrete, actionable tasks
+4. Include both theoretical and practical tasks
 4. For PROJECT type tasks, include specific deliverables and evaluation criteria
 5. Be realistic about time estimates
 6. Consider the learner's existing background
@@ -31,6 +32,7 @@ CRITICAL: You must respond ONLY with a single JSON object (not an array) matchin
       "title": "string",
       "description": "string",
       "objectives": ["string"],
+      "topics": ["string"],
       "estimatedHours": number,
       "tasks": [
         {

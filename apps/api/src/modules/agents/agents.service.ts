@@ -16,6 +16,7 @@ export interface GeneratePathPayload {
 export interface GenerateContentPayload {
   phaseTitle: string;
   phaseObjectives: string[];
+  topicTitle?: string;
   taskContext?: string;
   contentType: string;
   customPrompt?: string;

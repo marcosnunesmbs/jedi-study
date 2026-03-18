@@ -121,6 +121,11 @@ export default function ContentPage() {
             <span style={{ backgroundColor: 'rgba(124, 58, 237, 0.1)', color: 'var(--primary)', fontSize: '0.75rem', fontWeight: 'bold', padding: '0.25rem 0.75rem', borderRadius: '9999px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               {content?.type || 'Material'}
             </span>
+            {content?.topic && (
+              <span style={{ backgroundColor: 'var(--surface)', color: 'var(--text-slate-600)', fontSize: '0.75rem', fontWeight: 600, padding: '0.25rem 0.75rem', borderRadius: '9999px', border: '1px solid var(--border-color)' }}>
+                Topic: {content.topic}
+              </span>
+            )}
             <span style={{ color: 'var(--text-slate-400)', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
               <Clock size={18} />
               {content?.status === 'COMPLETE' ? 'Ready to read' : content?.status}

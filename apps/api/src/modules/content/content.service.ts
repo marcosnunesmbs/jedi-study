@@ -10,7 +10,7 @@ export class ContentService {
     @InjectQueue('content-generation') private readonly contentQueue: Queue,
   ) {}
 
-  async generateForPhase(phaseId: string, contentType: string = 'EXPLANATION', customPrompt?: string, userId?: string) {
+  async generateForPhase(phaseId: string, contentType: string = 'EXPLANATION', customPrompt?: string, userId?: string, topic?: string) {
     const phase = await this.prisma.phase.findUnique({ 
       where: { id: phaseId },
       include: { studyPath: { select: { userId: true } } }
@@ -20,11 +20,18 @@ export class ContentService {
       throw new NotFoundException('Phase not found');
     }
 
+    const contentTitle = topic 
+      ? `${contentType} — ${topic}`
+      : customPrompt 
+        ? `Custom: ${customPrompt.replace(/\n/g, ' ').slice(0, 120)}${customPrompt.length > 120 ? '...' : ''}` 
+        : `${contentType} — ${phase.title}`;
+
     const content = await this.prisma.content.create({
       data: {
         phaseId,
+        topic,
         type: contentType,
-        title: customPrompt ? `Custom: ${customPrompt.replace(/\n/g, ' ').slice(0, 120)}${customPrompt.length > 120 ? '...' : ''}` : `${contentType} — ${phase.title}`,
+        title: contentTitle,
         body: '',
         status: 'PENDING',
       },
@@ -39,6 +46,7 @@ export class ContentService {
         phaseObjectives: typeof phase.objectives === 'string' ? JSON.parse(phase.objectives || '[]') : phase.objectives,
         contentType,
         customPrompt,
+        topic,
       },
       {
         attempts: 3,

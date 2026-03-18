@@ -2,8 +2,8 @@ import client from './client';
 import { useAuthStore } from '../store/auth.store';
 
 export const contentApi = {
-  generate: (phaseId: string, contentType = 'EXPLANATION', customPrompt?: string) =>
-    client.post(`/phases/${phaseId}/content/generate`, { contentType, customPrompt }),
+  generate: (phaseId: string, contentType = 'EXPLANATION', customPrompt?: string, topic?: string) =>
+    client.post(`/phases/${phaseId}/content/generate`, { contentType, customPrompt, topic }),
 
   get: (id: string) => client.get(`/content/${id}`),
 

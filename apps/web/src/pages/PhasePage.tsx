@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useEffect, useRef } from 'react';
 import { phasesApi } from '../api/phases.api';
 import { contentApi } from '../api/content.api';
-import { ChevronLeft, Radar, CheckCircle, Sparkles, BookOpen, Code, Rocket, HelpCircle, ClipboardList, ChevronRight, FileText, Hourglass, AlertCircle } from 'lucide-react';
+import { ChevronLeft, Radar, CheckCircle, Sparkles, BookOpen, Code, Rocket, HelpCircle, ClipboardList, ChevronRight, FileText, Hourglass, AlertCircle, ChevronDown, Layers } from 'lucide-react';
 
 const STATUS_COLOR: Record<string, string> = {
   COMPLETE: '#10b981',
@@ -23,6 +23,13 @@ const STATUS_BG: Record<string, string> = {
   PENDING: 'rgba(107, 114, 128, 0.1)',
 };
 
+const CONTENT_TYPES = [
+  { type: 'EXPLANATION', label: 'Explanation' },
+  { type: 'EXAMPLE', label: 'Example' },
+  { type: 'SUMMARY', label: 'Summary' },
+  { type: 'RESOURCE_LIST', label: 'Resources' },
+];
+
 export default function PhasePage() {
   const { phaseId } = useParams<{ phaseId: string }>();
   const navigate = useNavigate();
@@ -30,6 +37,7 @@ export default function PhasePage() {
   const queryClient = useQueryClient();
   const [customPrompt, setCustomPrompt] = useState('');
   const hasTriggeredPrompt = useRef<string | null>(null);
+  const [expandedTopics, setExpandedTopics] = useState<Record<string, boolean>>({});
 
   const { data: phase, isLoading } = useQuery({
     queryKey: ['phase', phaseId],
@@ -44,7 +52,8 @@ export default function PhasePage() {
   });
 
   const generateContentMutation = useMutation({
-    mutationFn: (type: string) => contentApi.generate(phaseId!, type, type === 'CUSTOM' ? customPrompt : undefined),
+    mutationFn: ({ type, topic }: { type: string, topic?: string }) => 
+      contentApi.generate(phaseId!, type, type === 'CUSTOM' ? customPrompt : undefined, topic),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['phase', phaseId] });
       setCustomPrompt('');
@@ -72,8 +81,28 @@ export default function PhasePage() {
     QUIZ: <HelpCircle size={20} />,
   };
 
+  const toggleTopic = (topic: string) => {
+    setExpandedTopics(prev => ({ ...prev, [topic]: !prev[topic] }));
+  };
+
   if (isLoading) return <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-slate-500)' }}>Loading phase details...</div>;
   if (!p) return <div>Phase not found.</div>;
+
+  const topics = p.topics || [];
+  const contents = p.contents || [];
+  
+  // Group contents by topic
+  const contentsByTopic: Record<string, any[]> = {};
+  const generalContents: any[] = [];
+
+  contents.forEach((content: any) => {
+    if (content.topic) {
+      if (!contentsByTopic[content.topic]) contentsByTopic[content.topic] = [];
+      contentsByTopic[content.topic].push(content);
+    } else {
+      generalContents.push(content);
+    }
+  });
 
   return (
     <div style={{ animation: 'fadeIn 0.5s ease-out' }}>
@@ -97,7 +126,7 @@ export default function PhasePage() {
             Learning Objectives
           </h3>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '0.75rem' }}>
-            {(JSON.parse(p.objectives) as string[]).map((o: string, i: number) => (
+            {(typeof p.objectives === 'string' ? JSON.parse(p.objectives) : p.objectives).map((o: string, i: number) => (
               <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', color: 'var(--text-slate-600)', fontSize: '0.875rem', lineHeight: 1.5 }}>
                 <CheckCircle size={20} style={{ color: '#10b981', flexShrink: 0 }} />
                 {o}
@@ -108,86 +137,181 @@ export default function PhasePage() {
       )}
 
       <div style={{ marginBottom: '3rem' }}>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-slate-900)', margin: '0 0 1.5rem 0' }}>Learning Materials</h2>
-        
-        <div className="card" style={{ padding: '1.25rem', backgroundColor: 'var(--surface)', borderStyle: 'dashed', marginBottom: '1.5rem' }}>
-          <p style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-slate-700)', margin: '0 0 0.75rem 0' }}>Ask AI for specific content:</p>
-          <div style={{ display: 'flex', gap: '0.75rem' }}>
-            <input 
-              className="input-field"
-              value={customPrompt}
-              onChange={(e) => setCustomPrompt(e.target.value)}
-              placeholder="e.g. Explain this with a real-world example..."
-              onKeyDown={(e) => e.key === 'Enter' && customPrompt.trim() && generateContentMutation.mutate('CUSTOM')}
-              style={{ flex: 1, backgroundColor: 'white' }}
-            />
-            <button
-              className="btn-primary"
-              onClick={() => generateContentMutation.mutate('CUSTOM')}
-              disabled={generateContentMutation.isPending || !customPrompt.trim()}
-            >
-              <Sparkles size={20} />
-              Generate
-            </button>
-          </div>
-          
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '1rem' }}>
-            {['EXPLANATION', 'EXAMPLE', 'SUMMARY', 'RESOURCE_LIST'].map((type) => (
-              <button
-                key={type}
-                onClick={() => generateContentMutation.mutate(type)}
-                disabled={generateContentMutation.isPending}
-                style={{
-                  background: 'white', border: '1px solid var(--border-color)', color: 'var(--text-slate-600)',
-                  padding: '0.375rem 0.75rem', borderRadius: '0.5rem', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 500,
-                  display: 'flex', alignItems: 'center', gap: '0.25rem', transition: 'all 0.2s'
-                }}
-                onMouseOver={(e) => { e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.color = 'var(--primary)'; }}
-                onMouseOut={(e) => { e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.color = 'var(--text-slate-600)'; }}
-              >
-                {type === 'RESOURCE_LIST' ? 'Resources' : type.charAt(0) + type.slice(1).toLowerCase()}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div style={{ display: 'grid', gap: '0.75rem' }}>
-          {(p.contents || []).map((content: any) => (
-            <div
-              key={content.id}
-              className="card"
-              onClick={() => navigate(`/content/${content.id}`)}
-              style={{
-                padding: '1rem 1.25rem',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                cursor: 'pointer',
-                borderLeft: content.status === 'COMPLETE' ? '4px solid #10b981' : content.status === 'GENERATING' ? '4px solid #f59e0b' : '1px solid var(--border-color)'
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <div style={{ 
-                  width: '2rem', height: '2rem', borderRadius: '0.5rem', 
-                  backgroundColor: STATUS_BG[content.status] || 'var(--surface)',
-                  color: STATUS_COLOR[content.status] || 'var(--text-slate-400)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center'
-                }}>
-                  {content.status === 'COMPLETE' ? <FileText size={20} /> : content.status === 'GENERATING' ? <Hourglass size={20} /> : <AlertCircle size={20} />}
-                </div>
-                <span style={{ fontWeight: 500, color: 'var(--text-slate-900)' }}>{content.title}</span>
-              </div>
-              <span className="badge" style={{ backgroundColor: STATUS_BG[content.status] || 'var(--surface)', color: STATUS_COLOR[content.status] || 'var(--text-slate-500)' }}>
-                {content.status}
-              </span>
-            </div>
-          ))}
-          {(!p.contents || p.contents.length === 0) && (
-            <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-slate-500)', border: '1px dashed var(--border-color)', borderRadius: '0.75rem' }}>
-              No learning materials yet. Ask AI to generate some!
-            </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-slate-900)', margin: 0 }}>Learning Materials</h2>
+          {topics.length > 0 && (
+            <span style={{ fontSize: '0.875rem', color: 'var(--text-slate-500)', fontWeight: 500 }}>
+              {topics.length} topics identified
+            </span>
           )}
         </div>
+        
+        {/* Topic-based content sections */}
+        <div style={{ display: 'grid', gap: '1rem', marginBottom: '1.5rem' }}>
+          {topics.map((topic: string, index: number) => {
+            const isExpanded = expandedTopics[topic] ?? true;
+            const topicContents = contentsByTopic[topic] || [];
+            
+            return (
+              <div key={index} className="card" style={{ padding: 0, overflow: 'hidden' }}>
+                <div 
+                  onClick={() => toggleTopic(topic)}
+                  style={{ 
+                    padding: '1rem 1.25rem', backgroundColor: 'var(--surface)', cursor: 'pointer',
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    borderBottom: isExpanded ? '1px solid var(--border-color)' : 'none'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <Layers size={18} style={{ color: 'var(--primary)' }} />
+                    <span style={{ fontWeight: 600, color: 'var(--text-slate-900)' }}>{topic}</span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-slate-500)', backgroundColor: 'white', padding: '0.125rem 0.5rem', borderRadius: '1rem', border: '1px solid var(--border-color)' }}>
+                      {topicContents.length}
+                    </span>
+                  </div>
+                  <ChevronDown size={20} style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s', color: 'var(--text-slate-400)' }} />
+                </div>
+
+                {isExpanded && (
+                  <div style={{ padding: '1.25rem' }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-slate-400)', textTransform: 'uppercase', width: '100%', marginBottom: '0.25rem' }}>Generate content:</span>
+                      {CONTENT_TYPES.map((ct) => (
+                        <button
+                          key={ct.type}
+                          onClick={() => generateContentMutation.mutate({ type: ct.type, topic })}
+                          disabled={generateContentMutation.isPending}
+                          style={{
+                            background: 'white', border: '1px solid var(--border-color)', color: 'var(--text-slate-600)',
+                            padding: '0.375rem 0.75rem', borderRadius: '0.5rem', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 500,
+                            display: 'flex', alignItems: 'center', gap: '0.25rem', transition: 'all 0.2s'
+                          }}
+                          onMouseOver={(e) => { e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.color = 'var(--primary)'; }}
+                          onMouseOut={(e) => { e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.color = 'var(--text-slate-600)'; }}
+                        >
+                          {ct.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    <div style={{ display: 'grid', gap: '0.5rem' }}>
+                      {topicContents.map((content) => (
+                        <div
+                          key={content.id}
+                          onClick={() => navigate(`/content/${content.id}`)}
+                          style={{
+                            padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)',
+                            display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer',
+                            backgroundColor: 'white', transition: 'all 0.2s'
+                          }}
+                          onMouseOver={(e) => { e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.backgroundColor = 'var(--surface)'; }}
+                          onMouseOut={(e) => { e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.backgroundColor = 'white'; }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                            <div style={{ color: STATUS_COLOR[content.status] }}>
+                              {content.status === 'COMPLETE' ? <FileText size={16} /> : <Hourglass size={16} />}
+                            </div>
+                            <span style={{ fontSize: '0.875rem', fontWeight: 500 }}>{content.title}</span>
+                          </div>
+                          <span style={{ fontSize: '0.75rem', color: STATUS_COLOR[content.status], fontWeight: 600 }}>{content.status}</span>
+                        </div>
+                      ))}
+                      {topicContents.length === 0 && (
+                        <div style={{ textAlign: 'center', padding: '1rem', fontSize: '0.875rem', color: 'var(--text-slate-400)', border: '1px dashed var(--border-color)', borderRadius: '0.5rem' }}>
+                          No content for this topic yet.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* General/Phase-level content section */}
+        {(generalContents.length > 0 || topics.length === 0) && (
+          <div className="card" style={{ padding: '1.25rem', marginBottom: '1.5rem' }}>
+            <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-slate-900)', marginBottom: '1rem' }}>
+              {topics.length > 0 ? 'General Materials' : 'Learning Materials'}
+            </h3>
+            
+            <div style={{ padding: '1rem', backgroundColor: 'var(--surface)', border: '1px dashed var(--border-color)', borderRadius: '0.75rem', marginBottom: '1.25rem' }}>
+              <p style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-slate-700)', margin: '0 0 0.75rem 0' }}>Ask AI for specific content:</p>
+              <div style={{ display: 'flex', gap: '0.75rem' }}>
+                <input 
+                  className="input-field"
+                  value={customPrompt}
+                  onChange={(e) => setCustomPrompt(e.target.value)}
+                  placeholder="e.g. Explain this with a real-world example..."
+                  onKeyDown={(e) => e.key === 'Enter' && customPrompt.trim() && generateContentMutation.mutate({ type: 'CUSTOM' })}
+                  style={{ flex: 1, backgroundColor: 'white' }}
+                />
+                <button
+                  className="btn-primary"
+                  onClick={() => generateContentMutation.mutate({ type: 'CUSTOM' })}
+                  disabled={generateContentMutation.isPending || !customPrompt.trim()}
+                >
+                  <Sparkles size={20} />
+                  Generate
+                </button>
+              </div>
+              
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '1rem' }}>
+                {CONTENT_TYPES.map((ct) => (
+                  <button
+                    key={ct.type}
+                    onClick={() => generateContentMutation.mutate({ type: ct.type })}
+                    disabled={generateContentMutation.isPending}
+                    style={{
+                      background: 'white', border: '1px solid var(--border-color)', color: 'var(--text-slate-600)',
+                      padding: '0.375rem 0.75rem', borderRadius: '0.5rem', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 500,
+                      display: 'flex', alignItems: 'center', gap: '0.25rem', transition: 'all 0.2s'
+                    }}
+                    onMouseOver={(e) => { e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.color = 'var(--primary)'; }}
+                    onMouseOut={(e) => { e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.color = 'var(--text-slate-600)'; }}
+                  >
+                    {ct.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gap: '0.75rem' }}>
+              {generalContents.map((content: any) => (
+                <div
+                  key={content.id}
+                  onClick={() => navigate(`/content/${content.id}`)}
+                  style={{
+                    padding: '1rem 1.25rem', borderRadius: '0.75rem', border: '1px solid var(--border-color)',
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer',
+                    borderLeft: content.status === 'COMPLETE' ? '4px solid #10b981' : content.status === 'GENERATING' ? '4px solid #f59e0b' : '1px solid var(--border-color)'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <div style={{ 
+                      width: '2rem', height: '2rem', borderRadius: '0.5rem', 
+                      backgroundColor: STATUS_BG[content.status] || 'var(--surface)',
+                      color: STATUS_COLOR[content.status] || 'var(--text-slate-400)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center'
+                    }}>
+                      {content.status === 'COMPLETE' ? <FileText size={20} /> : content.status === 'GENERATING' ? <Hourglass size={20} /> : <AlertCircle size={20} />}
+                    </div>
+                    <span style={{ fontWeight: 500, color: 'var(--text-slate-900)' }}>{content.title}</span>
+                  </div>
+                  <span className="badge" style={{ backgroundColor: STATUS_BG[content.status] || 'var(--surface)', color: STATUS_COLOR[content.status] || 'var(--text-slate-500)' }}>
+                    {content.status}
+                  </span>
+                </div>
+              ))}
+              {generalContents.length === 0 && topics.length === 0 && (
+                <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-slate-500)', border: '1px dashed var(--border-color)', borderRadius: '0.75rem' }}>
+                  No learning materials yet. Ask AI to generate some!
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       <div>

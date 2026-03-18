@@ -23,6 +23,14 @@ export class PhasesService {
     // but returning it is fine as it just has userId. We'll leave it or delete it.
     delete (phase as any).studyPath;
 
+    if (phase.topics && typeof phase.topics === 'string') {
+      try {
+        (phase as any).topics = JSON.parse(phase.topics);
+      } catch (e) {
+        (phase as any).topics = [];
+      }
+    }
+
     return phase;
   }
 

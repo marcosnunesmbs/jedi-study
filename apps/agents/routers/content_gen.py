@@ -9,6 +9,7 @@ router = APIRouter()
 class ContentGenRequest(BaseModel):
     phaseTitle: str
     phaseObjectives: List[str]
+    topicTitle: Optional[str] = None
     contentType: str = "EXPLANATION"
     taskContext: Optional[str] = None
     customPrompt: Optional[str] = None
@@ -21,6 +22,7 @@ async def gen_content(req: ContentGenRequest):
             phase_title=req.phaseTitle,
             phase_objectives=req.phaseObjectives,
             content_type=req.contentType,
+            topic_title=req.topicTitle or "",
             task_context=req.taskContext or "",
             custom_prompt=req.customPrompt
         )

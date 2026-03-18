@@ -20,11 +20,12 @@ async def generate_content(
     phase_title: str,
     phase_objectives: list[str],
     content_type: str,
+    topic_title: str = "",
     task_context: str = "",
     custom_prompt: str = "",
 ) -> AgentResponse:
     model = create_model()
-    prompt = build_prompt(phase_title, phase_objectives, content_type, task_context, custom_prompt)
+    prompt = build_prompt(phase_title, phase_objectives, content_type, topic_title, task_context, custom_prompt)
 
     start_time = time.time()
     response = model.generate_content(prompt)
