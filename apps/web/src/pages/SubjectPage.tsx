@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { studyPathsApi } from '../api/study-paths.api';
@@ -22,6 +22,7 @@ const STATUS_BG: Record<string, string> = {
 export default function SubjectPage() {
   const { subjectId } = useParams<{ subjectId: string }>();
   const navigate = useNavigate();
+  const [showModal, setShowModal] = useState(false);
 
   const { data: subject } = useQuery({
     queryKey: ['subject', subjectId],
@@ -79,7 +80,7 @@ export default function SubjectPage() {
         
         <button
           className="btn-primary"
-          onClick={() => generateMutation.mutate()}
+          onClick={() => setShowModal(true)}
           disabled={generateMutation.isPending || path?.status === 'GENERATING'}
           style={{ background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-slate-600)', padding: '0.625rem 1.25rem' }}
         >
@@ -183,6 +184,36 @@ export default function SubjectPage() {
         </div>
       )}
       
+      {showModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
+          <div className="card" style={{ padding: '2rem', maxWidth: '400px', width: '90%', animation: 'fadeIn 0.2s ease-out' }}>
+            <h3 style={{ margin: '0 0 1rem 0', color: 'var(--text-slate-900)' }}>Regenerate Study Path?</h3>
+            <p style={{ margin: '0 0 1.5rem 0', color: 'var(--text-slate-600)', lineHeight: 1.5, fontSize: '0.875rem' }}>
+              Are you sure you want to regenerate this path? <br/><br/>
+              <strong>Warning:</strong> All current progress will be completely deleted.
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
+              <button 
+                onClick={() => setShowModal(false)}
+                style={{ padding: '0.5rem 1rem', background: 'transparent', border: '1px solid var(--border-color)', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 500, color: 'var(--text-slate-600)' }}
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => {
+                  setShowModal(false);
+                  generateMutation.mutate();
+                }}
+                className="btn-primary"
+                style={{ padding: '0.5rem 1rem', backgroundColor: '#ef4444', border: 'none' }}
+              >
+                Regenerate
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <style>{`
         @keyframes spin {
           from { transform: rotate(0deg); }

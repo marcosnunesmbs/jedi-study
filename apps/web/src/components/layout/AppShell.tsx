@@ -31,11 +31,11 @@ export default function AppShell() {
         </nav>
 
         <div className="sidebar-footer">
-          <div className="sidebar-promo">
+          {/* <div className="sidebar-promo">
             <p style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-slate-500)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 0.5rem 0' }}>Pro Plan</p>
             <p style={{ fontSize: '0.875rem', color: 'var(--text-slate-700)', margin: '0 0 0.75rem 0', lineHeight: 1.5 }}>Unlock advanced subjects & AI tutoring.</p>
             <button className="btn-primary" style={{ width: '100%', padding: '0.5rem', fontSize: '0.75rem' }}>Upgrade Now</button>
-          </div>
+          </div> */}
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0 0.5rem' }}>
             <img 
@@ -47,7 +47,7 @@ export default function AppShell() {
               <p style={{ fontSize: '0.875rem', fontWeight: 500, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {user?.email?.split('@')[0] || 'User'}
               </p>
-              <p style={{ fontSize: '0.75rem', color: 'var(--text-slate-500)', margin: 0 }}>Pro Member</p>
+              {/* <p style={{ fontSize: '0.75rem', color: 'var(--text-slate-500)', margin: 0 }}>Pro Member</p> */}
             </div>
             <button 
               onClick={logout}
