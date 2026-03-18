@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Jedi Study - Immersive Reading Experience</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@300..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#7c3aed",
+                        "background-light": "#ffffff",
+                        "background-dark": "#0a0a0a",
+                        "surface": "#f8f9fa",
+                        "border-color": "#e5e7eb"
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "serif": ["Charter", "Georgia", "serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "0.75rem",
+                        "xl": "1rem",
+                        "full": "9999px"
+                    },
+                    boxShadow: {
+                        "soft": "0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -2px rgba(0, 0, 0, 0.05)"
+                    }
+                },
+            },
+        }
+    </script>
+<style data-purpose="typography-and-custom-styles">
+        @import url('https://fonts.googleapis.com/css2?family=Charter:ital,wght@0,400;0,700;1,400&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .material-symbols-outlined { 
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; 
+        }
+        
+        .active-nav { 
+            background-color: rgba(124, 58, 237, 0.08); 
+            color: #7c3aed; 
+        }
+
+        .prose-content {
+            font-family: 'Charter', Georgia, serif;
+            line-height: 1.625;
+            font-size: 1.25rem;
+            color: #1a1a1a;
+        }
+
+        pre {
+            background-color: #1e1e1e !important;
+            color: #d4d4d4;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            font-family: 'Fira Code', 'Cascadia Code', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        .code-keyword { color: #569cd6; }
+        .code-string { color: #ce9178; }
+        .code-comment { color: #6a9955; }
+        .code-function { color: #dcdcaa; }
+
+        blockquote {
+            border-left: 5px solid #7c3aed !important;
+            padding-left: 1.5rem;
+            font-style: italic;
+            color: #4b5563;
+            margin: 2rem 0;
+        }
+
+        .styled-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 2rem 0;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+        }
+        .styled-table th {
+            background-color: #f9fafb;
+            border-bottom: 2px solid #e5e7eb;
+            text-align: left;
+            padding: 12px;
+            font-weight: 600;
+        }
+        .styled-table td {
+            border-bottom: 1px solid #f3f4f6;
+            padding: 12px;
+        }
+
+        .readable-container {
+            max-width: 720px;
+        }
+    </style>
+</head>
+<body class="bg-background-light text-slate-900 font-display selection:bg-violet-100">
+<div class="flex h-screen overflow-hidden">
+<!-- Fixed Sidebar from SCREEN_2 -->
+<aside class="w-64 border-r border-border-color flex flex-col bg-white h-full shrink-0">
+<div class="p-6 flex items-center gap-3">
+<div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-xl">auto_awesome</span>
+</div>
+<h1 class="text-lg font-bold tracking-tight">Jedi Study</h1>
+</div>
+<nav class="flex-1 px-4 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors" href="#">
+<span class="material-symbols-outlined">grid_view</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors" href="#">
+<span class="material-symbols-outlined">map</span>
+<span class="text-sm font-medium">Paths</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg active-nav transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">book</span>
+<span class="text-sm font-medium">Subjects</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors" href="#">
+<span class="material-symbols-outlined">toll</span>
+<span class="text-sm font-medium">Token Usage</span>
+</a>
+</nav>
+<div class="p-4 border-t border-border-color">
+<div class="bg-surface rounded-xl p-4 mb-4">
+<p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Pro Plan</p>
+<p class="text-sm text-slate-700 mb-3 leading-relaxed">Unlock advanced subjects &amp; AI tutoring.</p>
+<button class="w-full py-2 bg-primary text-white text-xs font-bold rounded-lg hover:opacity-90 transition-opacity">
+                    Upgrade Now
+                </button>
+</div>
+<div class="flex items-center gap-3 px-2">
+<div class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden">
+<img alt="Alex Rivera" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAA72wE-V5THZ3L87582YYTTRQgN5dE-salswzl16Smk5cy0l6A7Yx2G_IgkcT8tHxqWhXWYHRS_tyxlMX68U3HTEl5YZg8RpJHW-l8d-Me7JlqgFyk2f8mNlFxXclQ21plVybzRDLw7TJ8V3Phjf9yCnN4UI3GwVhlcgjrov9dWTTSNc4kqII8HUFDN9HooK2mXP1aR5L_pTaHGLqsAupXGhDDJrg7inDJH5yIE2H_UxUZXQCldMhjd8etnLbEkGYMdiu--oUdVVw"/>
+</div>
+<div class="flex-1 overflow-hidden">
+<p class="text-sm font-medium truncate">Alex Rivera</p>
+<p class="text-xs text-slate-500 truncate">Pro Member</p>
+</div>
+<span class="material-symbols-outlined text-slate-400 text-lg">settings</span>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col overflow-hidden bg-background-light">
+<!-- Header from SCREEN_2 -->
+<header class="h-16 border-b border-border-color flex items-center justify-between px-8 bg-white/80 backdrop-blur-md sticky top-0 z-10 shrink-0">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-full max-w-md group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg group-focus-within:text-primary transition-colors">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface border-transparent rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-slate-400" placeholder="Search subjects..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-slate-500 hover:bg-surface rounded-lg relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full border-2 border-white"></span>
+</button>
+<button class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-sm hover:shadow-md transition-all active:scale-95">
+<span class="material-symbols-outlined text-lg">add</span>
+                    New Subject
+                </button>
+</div>
+</header>
+<!-- Rich Content View -->
+<div class="flex-1 overflow-y-auto">
+<article class="readable-container mx-auto py-16 px-6">
+<!-- BEGIN: Article Header -->
+<header class="mb-12">
+<div class="flex items-center space-x-4 mb-6">
+<span class="bg-violet-100 text-violet-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Mastery Series</span>
+<span class="text-gray-400 text-sm">8 min read</span>
+</div>
+<h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight mb-6">
+                        The Architecture of Inner Discipline: A Jedi's Guide to Focus
+                    </h1>
+<p class="text-xl text-gray-500 font-serif italic">
+                        Exploring the intersections of ancient mindfulness and modern cognitive science.
+                    </p>
+<div class="mt-8 flex items-center space-x-3">
+<div class="w-10 h-10 rounded-full bg-violet-200 overflow-hidden">
+<img alt="Author Avatar" class="object-cover w-full h-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVobrP4_pxbWMg7ogO4fQUFdTU2AMcdlANymrRb0G2zhHiMAXTYCfZrR2RL30RoaiJWvZ4YtEUxc0gXnfPhdAd1B1c4Uor5zQA7NbEKMw11Jk0jJjkSQbPZBRDm0kj2arhbCcIf1yljGP-hldzpYUW3GHybv38abebVKqgUwQiZ5s1pjKX6Djs-hsL2a1j3sTu1qaLHxTM72M9YfeKw3qsqvJdY6nq_Coy4nYmabeo8kEzAZWvFv2Bd9xH8wkhVXFdh81Cn9dXIWU"/>
+</div>
+<div>
+<p class="text-sm font-semibold text-gray-900">Archives Specialist</p>
+<p class="text-xs text-gray-500">Updated Oct 24, 2023</p>
+</div>
+</div>
+</header>
+<!-- END: Article Header -->
+<!-- BEGIN: Prose Content -->
+<div class="prose-content" data-purpose="markdown-body">
+<p class="mb-8">
+                        To understand the Force is not merely to study its external manifestations, but to master the vessel through which it flows. In the quiet halls of the Jedi Temple, discipline is not seen as a restriction, but as the ultimate liberator of potential.
+                    </p>
+<h2 class="text-3xl font-bold font-sans mt-12 mb-6 text-gray-900">The Three Pillars of Attention</h2>
+<p class="mb-6">
+                        In our modern era of digital noise, the ability to sustain focus has become a rare commodity. We can categorize the levels of attentional mastery into three distinct phases:
+                    </p>
+<!-- BEGIN: Data Table -->
+<table class="styled-table" data-purpose="comparison-table">
+<thead>
+<tr>
+<th>Phase</th>
+<th>Focus Area</th>
+<th>Outcome</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Unification</td>
+<td>Internal Awareness</td>
+<td>Emotional Stability</td>
+</tr>
+<tr>
+<td>Expansion</td>
+<td>Environmental Sync</td>
+<td>Heightened Intuition</td>
+</tr>
+<tr>
+<td>Transcendence</td>
+<td>The Living Force</td>
+<td>Absolute Presence</td>
+</tr>
+</tbody>
+</table>
+<!-- END: Data Table -->
+<p class="mb-6">
+                        As we progress, we often find that the most profound insights come not from active searching, but from active listening. As the old scrolls suggest:
+                    </p>
+<!-- BEGIN: Blockquote -->
+<blockquote data-purpose="inspirational-quote">
+                        "The Force is not a tool to be wielded by the ego, but a harmony to be joined. Only when the mind is silent can the song of the universe be heard in its entirety."
+                    </blockquote>
+<!-- END: Blockquote -->
+<h2 class="text-3xl font-bold font-sans mt-12 mb-6 text-gray-900">Coding the Internal Compass</h2>
+<p class="mb-6">
+                        Just as a Holocron requires precise logic to function, our mental frameworks can be understood through the lens of structured systems. Consider this conceptual logic for a focus routine:
+                    </p>
+<!-- BEGIN: Code Block -->
+<div class="my-8" data-purpose="syntax-highlighting">
+<pre><code><span class="code-comment">// Routine: Attunement Sequence</span>
+<span class="code-keyword">function</span> <span class="code-function">initiateAttunement</span>(mindset) {
+  <span class="code-keyword">const</span> focus = mindset.<span class="code-function">currentFocus</span>();
+  
+  <span class="code-keyword">if</span> (focus === <span class="code-string">'cluttered'</span>) {
+    <span class="code-keyword">return</span> <span class="code-function">performMeditation</span>({ duration: <span class="code-string">'20min'</span> });
+  }
+
+  <span class="code-comment">// Connect to the surrounding energy</span>
+  <span class="code-keyword">return</span> <span class="code-function">synchronizeWithForce</span>();
+}
+
+<span class="code-function">initiateAttunement</span>(new <span class="code-function">MindState</span>());</code></pre>
+</div>
+<!-- END: Code Block -->
+<p class="mb-8">
+                        By treating our mental state as an environment to be curated rather than a battle to be won, we move closer to the ideal of the scholar-warrior. Total immersion is not the absence of thought, but the alignment of it.
+                    </p>
+<hr class="my-12 border-gray-100"/>
+<h3 class="text-2xl font-bold font-sans mb-4 text-gray-900">Suggested Reading</h3>
+<ul class="list-disc pl-6 space-y-3 mb-12">
+<li><a class="text-primary hover:underline" href="#">The Breath of the Stars: An Anthology</a></li>
+<li><a class="text-primary hover:underline" href="#">Cognitive Load Theory in High-Stress Environments</a></li>
+<li><a class="text-primary hover:underline" href="#">Chronicles of the High Republic</a></li>
+</ul>
+</div>
+<!-- END: Prose Content -->
+<!-- BEGIN: Article Footer Tags -->
+<footer class="mt-16 pt-8 border-t border-gray-100">
+<div class="flex flex-wrap gap-2">
+<span class="px-3 py-1 bg-gray-100 text-gray-600 text-sm rounded-md">Mindfulness</span>
+<span class="px-3 py-1 bg-gray-100 text-gray-600 text-sm rounded-md">Jedi Philosophy</span>
+<span class="px-3 py-1 bg-gray-100 text-gray-600 text-sm rounded-md">Productivity</span>
+</div>
+</footer>
+<!-- END: Article Footer Tags -->
+</article>
+<!-- Page Footer Embedded in Main Area -->
+<footer class="bg-gray-50 py-12 px-6 border-t border-gray-100" data-purpose="site-footer">
+<div class="max-w-4xl mx-auto text-center">
+<p class="text-gray-400 text-sm mb-4 italic">"There is no ignorance, there is knowledge."</p>
+<div class="flex justify-center space-x-6 mb-8 text-gray-400">
+<a class="hover:text-primary transition-colors" href="#">Twitter</a>
+<a class="hover:text-primary transition-colors" href="#">Newsletter</a>
+<a class="hover:text-primary transition-colors" href="#">Privacy</a>
+</div>
+<p class="text-gray-300 text-xs">© 2023 Jedi Study Archives. For educational purposes only.</p>
+</div>
+</footer>
+</div>
+</main>
+</div>
+</body></html>

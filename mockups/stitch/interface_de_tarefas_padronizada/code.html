@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Jedi Study - Task and Analysis Interface</title>
+<!-- BEGIN: Scripts and Configuration -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@300..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#7c3aed",
+            "background-light": "#ffffff",
+            "background-dark": "#0a0a0a",
+            "surface": "#f8f9fa",
+            "border-color": "#e5e7eb",
+            jedi: {
+              bg: '#ffffff',
+              sidebar: '#ffffff',
+              accent: '#7c3aed',
+              success: '#10b981',
+              warning: '#f59e0b'
+            }
+          },
+          fontFamily: {
+            "display": ["Inter", "sans-serif"],
+            "mono": ["Fira Code", "monospace"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.5rem",
+            "lg": "0.75rem",
+            "xl": "1rem",
+            "full": "9999px"
+          },
+          boxShadow: {
+            "soft": "0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -2px rgba(0, 0, 0, 0.05)"
+          }
+        }
+      }
+    }
+  </script>
+<!-- END: Scripts and Configuration -->
+<!-- BEGIN: Custom Typography Styles -->
+<style data-purpose="typography-and-scroll">
+    @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap');
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      overflow: hidden;
+    }
+
+    .markdown-content pre {
+      background-color: #0f172a;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      margin: 1rem 0;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.875rem;
+      border: 1px solid #e2e8f0;
+    }
+
+    .markdown-content h1 { font-size: 1.875rem; font-weight: 700; margin-bottom: 1rem; color: #0f172a; }
+    .markdown-content h2 { font-size: 1.5rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.75rem; color: #1e293b; }
+    .markdown-content p { margin-bottom: 1rem; line-height: 1.6; color: #475569; }
+    .markdown-content ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; color: #475569; }
+    .markdown-content li { margin-bottom: 0.5rem; }
+
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    .active-nav { background-color: rgba(124, 58, 237, 0.08); color: #7c3aed; }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+  </style>
+<!-- END: Custom Typography Styles -->
+</head>
+<body class="bg-background-light text-slate-900 font-display h-screen flex overflow-hidden">
+<!-- Fixed Sidebar (Standardized) -->
+<aside class="w-64 border-r border-border-color flex flex-col bg-white h-full shrink-0">
+<div class="p-6 flex items-center gap-3">
+<div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-xl">auto_awesome</span>
+</div>
+<h1 class="text-lg font-bold tracking-tight">Jedi Study</h1>
+</div>
+<nav class="flex-1 px-4 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors" href="#">
+<span class="material-symbols-outlined">grid_view</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors" href="#">
+<span class="material-symbols-outlined">map</span>
+<span class="text-sm font-medium">Paths</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg active-nav transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">book</span>
+<span class="text-sm font-medium">Subjects</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors" href="#">
+<span class="material-symbols-outlined">toll</span>
+<span class="text-sm font-medium">Token Usage</span>
+</a>
+</nav>
+<div class="p-4 border-t border-border-color">
+<div class="bg-surface rounded-xl p-4 mb-4">
+<p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Pro Plan</p>
+<p class="text-sm text-slate-700 mb-3 leading-relaxed">Unlock advanced subjects &amp; AI tutoring.</p>
+<button class="w-full py-2 bg-primary text-white text-xs font-bold rounded-lg hover:opacity-90 transition-opacity">
+        Upgrade Now
+      </button>
+</div>
+<div class="flex items-center gap-3 px-2">
+<div class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden">
+<img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAA72wE-V5THZ3L87582YYTTRQgN5dE-salswzl16Smk5cy0l6A7Yx2G_IgkcT8tHxqWhXWYHRS_tyxlMX68U3HTEl5YZg8RpJHW-l8d-Me7JlqgFyk2f8mNlFxXclQ21plVybzRDLw7TJ8V3Phjf9yCnN4UI3GwVhlcgjrov9dWTTSNc4kqII8HUFDN9HooK2mXP1aR5L_pTaHGLqsAupXGhDDJrg7inDJH5yIE2H_UxUZXQCldMhjd8etnLbEkGYMdiu--oUdVVw"/>
+</div>
+<div class="flex-1 overflow-hidden">
+<p class="text-sm font-medium truncate">Alex Rivera</p>
+<p class="text-xs text-slate-500 truncate">Pro Member</p>
+</div>
+<span class="material-symbols-outlined text-slate-400 text-lg">settings</span>
+</div>
+</div>
+</aside>
+<!-- Main Interface Wrapper -->
+<div class="flex-1 flex flex-col overflow-hidden bg-background-light">
+<!-- Header (Standardized) -->
+<header class="h-16 border-b border-border-color flex items-center justify-between px-8 bg-white/80 backdrop-blur-md shrink-0">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-full max-w-md group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg group-focus-within:text-primary transition-colors">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface border-transparent rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-slate-400" placeholder="Search subjects..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-slate-500 hover:bg-surface rounded-lg relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full border-2 border-white"></span>
+</button>
+<button class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-sm hover:shadow-md transition-all active:scale-95" id="submitBtn" onclick="toggleFeedback()">
+<span class="material-symbols-outlined text-lg">add</span>
+        New Subject
+      </button>
+</div>
+</header>
+<!-- BEGIN: Split Interface Container -->
+<main class="flex-grow flex overflow-hidden relative" data-purpose="split-screen-layout">
+<!-- BEGIN: Left Panel - Task Description -->
+<section class="w-1/2 overflow-y-auto p-8 border-r border-border-color bg-white markdown-content" data-purpose="markdown-viewer">
+<h1>The Neural Path: Optimization Challenge</h1>
+<p>Mastering the art of data handling is essential for any scholar. In this task, you must design a logic flow that efficiently processes incoming data streams while maintaining minimal latency.</p>
+<h2>Objectives</h2>
+<ul>
+<li>Implement a debouncing mechanism for high-frequency input.</li>
+<li>Ensure state persistence across session refreshes using localized storage.</li>
+<li>Document your algorithmic choices within the editor comments.</li>
+</ul>
+<h2>Sample Structure</h2>
+<pre><code class="text-white">function processInput(stream) {
+  // TODO: Implement the throttle logic
+  const optimized = stream.filter(data =&gt; data.priority &gt; 5);
+  return optimized;
+}</code></pre>
+<p>Review the requirements carefully. Your response will be analyzed for both logic efficiency and code readability.</p>
+<div class="mt-12 p-4 bg-surface rounded-lg border border-border-color text-sm">
+<p class="text-slate-500 italic">Hint: Consider using the "useMemo" pattern if you are aiming for peak performance in reactive environments.</p>
+</div>
+</section>
+<!-- END: Left Panel -->
+<!-- BEGIN: Right Panel - Text Editor -->
+<section class="w-1/2 flex flex-col bg-[#010409]" data-purpose="response-editor">
+<!-- Editor Toolbar -->
+<div class="h-10 border-b border-white/5 flex items-center px-4 bg-black/20 justify-between">
+<span class="text-xs font-mono text-slate-500">response.js</span>
+<div class="flex gap-2">
+<div class="w-2 h-2 rounded-full bg-red-500/30"></div>
+<div class="w-2 h-2 rounded-full bg-yellow-500/30"></div>
+<div class="w-2 h-2 rounded-full bg-green-500/30"></div>
+</div>
+</div>
+<!-- Distraction-free Editor Area -->
+<textarea class="flex-grow w-full bg-transparent p-6 font-mono text-sm leading-relaxed text-indigo-100 focus:ring-0 border-none resize-none" placeholder="// Start typing your solution here..." spellcheck="false">/**
+ * Jedi Study Task Response
+ * Author: Candidate_882
+ */
+
+class LogicController {
+  constructor() {
+    this.buffer = [];
+    this.timeout = null;
+  }
+
+  // Implementation of task objectives below...
+  
+}</textarea>
+</section>
+<!-- END: Right Panel -->
+<!-- BEGIN: Feedback Overlay (Conditional) -->
+<div class="hidden absolute inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-8 z-50" data-purpose="approval-dashboard" id="feedbackOverlay">
+<div class="max-w-4xl w-full bg-white border border-border-color rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
+<!-- Dashboard Header -->
+<div class="p-6 border-b border-border-color flex justify-between items-center bg-slate-50">
+<div>
+<h2 class="text-2xl font-bold text-slate-900">Task Result: <span class="text-primary italic">APPROVED</span></h2>
+<p class="text-slate-500 text-sm mt-1">Evaluated by AI Oracle Engine v4.2</p>
+</div>
+<div class="text-right">
+<div class="text-4xl font-black text-primary">92<span class="text-xl font-normal text-slate-400">/100</span></div>
+<div class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Performance Index</div>
+</div>
+</div>
+<!-- Dashboard Content -->
+<div class="grid grid-cols-2 gap-px bg-border-color">
+<!-- Strengths Section -->
+<div class="bg-white p-6">
+<h3 class="flex items-center gap-2 text-emerald-600 font-semibold mb-4">
+<span class="material-symbols-outlined">check_circle</span>
+              Strengths
+            </h3>
+<ul class="space-y-3">
+<li class="p-3 bg-emerald-50 border border-emerald-100 rounded-lg text-sm text-slate-700">
+<strong class="text-emerald-700 block mb-1">Clean Architecture</strong>
+                The class-based approach shows strong mastery of OOP principles and state management.
+              </li>
+<li class="p-3 bg-emerald-50 border border-emerald-100 rounded-lg text-sm text-slate-700">
+<strong class="text-emerald-700 block mb-1">Efficient Debounce</strong>
+                The timer management is precise and avoids memory leaks.
+              </li>
+</ul>
+</div>
+<!-- Improvements Section -->
+<div class="bg-white p-6">
+<h3 class="flex items-center gap-2 text-amber-600 font-semibold mb-4">
+<span class="material-symbols-outlined">info</span>
+              Improvements
+            </h3>
+<ul class="space-y-3">
+<li class="p-3 bg-amber-50 border border-amber-100 rounded-lg text-sm text-slate-700">
+<strong class="text-amber-700 block mb-1">Error Handling</strong>
+                The logic could be more robust against undefined data stream inputs.
+              </li>
+<li class="p-3 bg-amber-50 border border-amber-100 rounded-lg text-sm text-slate-700">
+<strong class="text-amber-700 block mb-1">Edge Cases</strong>
+                Rapid-fire input exactly at the timeout interval might trigger double-rendering.
+              </li>
+</ul>
+</div>
+</div>
+<!-- Action Footer -->
+<div class="p-4 bg-slate-50 flex justify-end gap-3">
+<button class="px-6 py-2 text-sm text-slate-500 font-medium hover:text-slate-900 transition-colors" onclick="toggleFeedback()">CLOSE</button>
+<button class="px-6 py-2 text-sm bg-primary text-white font-bold rounded-lg hover:opacity-90 transition-all">CONTINUE TO NEXT LEVEL</button>
+</div>
+</div>
+</div>
+<!-- END: Feedback Overlay -->
+</main>
+</div>
+<!-- BEGIN: Logic Script -->
+<script data-purpose="ui-interactivity">
+    function toggleFeedback() {
+      const overlay = document.getElementById('feedbackOverlay');
+      const submitBtn = document.getElementById('submitBtn');
+      
+      if (overlay.classList.contains('hidden')) {
+        overlay.classList.remove('hidden');
+      } else {
+        overlay.classList.add('hidden');
+      }
+    }
+  </script>
+<!-- END: Logic Script -->
+</body></html>

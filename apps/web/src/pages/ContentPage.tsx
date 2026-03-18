@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { contentApi } from '../api/content.api';
+import { ChevronLeft, Clock, Sparkles } from 'lucide-react';
 
 export default function ContentPage() {
   const { contentId } = useParams<{ contentId: string }>();
@@ -18,7 +19,6 @@ export default function ContentPage() {
   useEffect(() => {
     if (!content || content.status === 'COMPLETE' || content.status === 'ERROR') return;
 
-    // Use SSE for streaming
     const url = contentApi.streamUrl(contentId!);
     const eventSource = new EventSource(url);
 
@@ -28,13 +28,11 @@ export default function ContentPage() {
     });
 
     eventSource.addEventListener('done', () => {
-      console.log('SSE Stream finished');
       eventSource.close();
       refetch();
     });
 
     eventSource.addEventListener('error', (e) => {
-      // EventSource.readyState 2 means CLOSED
       if (eventSource.readyState === 2) {
         console.log('SSE connection closed');
       } else {
@@ -50,60 +48,74 @@ export default function ContentPage() {
   const body = streamedContent || content?.body || '';
 
   return (
-    <div>
-      <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', marginBottom: 16, fontWeight: 500 }}>
-        ← Back
+    <div style={{ animation: 'fadeIn 0.5s ease-out' }}>
+      <button 
+        onClick={() => navigate(-1)} 
+        style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: 'var(--text-slate-500)', background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 500, padding: 0, marginBottom: '2rem' }}
+      >
+        <ChevronLeft size={20} />
+        Back to Phase
       </button>
 
-      <div style={{ marginBottom: 32 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 700, color: '#111827' }}>{content?.title || 'Loading content...'}</h1>
-        <div style={{ display: 'flex', gap: 12, marginTop: 8, alignItems: 'center' }}>
-          <span style={{
-            fontSize: 12, padding: '3px 8px', borderRadius: 12,
-            background: content?.status === 'COMPLETE' ? '#dcfce7' : '#dbeafe',
-            color: content?.status === 'COMPLETE' ? '#166534' : '#1e40af',
-            fontWeight: 600
-          }}>
-            {content?.status || 'PENDING'}
-          </span>
-          <span style={{ color: '#6b7280', fontSize: 13, fontWeight: 500 }}>{content?.type}</span>
-        </div>
-      </div>
-
-      <div className="markdown-content" style={{ 
-        background: '#ffffff', borderRadius: 8, padding: 32, 
-        border: '1px solid #e5e7eb', minHeight: '60vh',
-        lineHeight: 1.6, color: '#374151',
-        boxShadow: '0 1px 2px 0 rgba(0,0,0,0.05)'
-      }}>
-        {body ? (
-          <ReactMarkdown 
-            remarkPlugins={[remarkGfm]}
-            components={{
-              table: ({node, ...props}) => (
-                <div style={{ overflowX: 'auto', marginBottom: 20 }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #e5e7eb' }} {...props} />
-                </div>
-              ),
-              th: ({node, ...props}) => <th style={{ border: '1px solid #e5e7eb', padding: '8px 12px', background: '#f9fafb', textAlign: 'left', color: '#111827' }} {...props} />,
-              td: ({node, ...props}) => <td style={{ border: '1px solid #e5e7eb', padding: '8px 12px' }} {...props} />,
-              h1: ({node, ...props}) => <h1 style={{ color: '#7c3aed', marginTop: 24, marginBottom: 16, borderBottom: '1px solid #e5e7eb', paddingBottom: 8 }} {...props} />,
-              h2: ({node, ...props}) => <h2 style={{ color: '#7c3aed', marginTop: 20, marginBottom: 12 }} {...props} />,
-              h3: ({node, ...props}) => <h3 style={{ color: '#6d28d9', marginTop: 16, marginBottom: 8 }} {...props} />,
-              code: ({node, ...props}) => <code style={{ background: '#f3f4f6', padding: '2px 6px', borderRadius: 4, color: '#be185d' }} {...props} />,
-              pre: ({node, ...props}) => <pre style={{ background: '#111827', padding: 16, borderRadius: 8, overflowX: 'auto', color: '#e5e7eb' }} {...props} />,
-              a: ({node, ...props}) => <a style={{ color: '#7c3aed', textDecoration: 'none', fontWeight: 500 }} target="_blank" rel="noopener noreferrer" {...props} />,
-              blockquote: ({node, ...props}) => <blockquote style={{ borderLeft: '4px solid #7c3aed', paddingLeft: 16, marginLeft: 0, color: '#4b5563', fontStyle: 'italic' }} {...props} />
-            }}
-          >
-            {body}
-          </ReactMarkdown>
-        ) : (
-          <p style={{ color: '#6b7280' }}>
-            {content?.status === 'PENDING' ? 'Preparing to generate...' : 'Generating content...'}
+      <article style={{ maxWidth: '720px', margin: '0 auto', paddingBottom: '4rem' }}>
+        <header style={{ marginBottom: '3rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+            <span style={{ backgroundColor: 'rgba(124, 58, 237, 0.1)', color: 'var(--primary)', fontSize: '0.75rem', fontWeight: 'bold', padding: '0.25rem 0.75rem', borderRadius: '9999px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              {content?.type || 'Material'}
+            </span>
+            <span style={{ color: 'var(--text-slate-400)', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+              <Clock size={18} />
+              {content?.status === 'COMPLETE' ? 'Ready to read' : content?.status}
+            </span>
+          </div>
+          
+          <h1 style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--text-slate-900)', lineHeight: 1.2, margin: '0 0 1rem 0' }}>
+            {content?.title || 'Loading content...'}
+          </h1>
+          
+          <p style={{ fontSize: '1.25rem', color: 'var(--text-slate-500)', fontStyle: 'italic', fontFamily: 'Georgia, serif', margin: 0 }}>
+            {content?.status === 'PENDING' ? 'Preparing the Holocron...' : content?.status === 'GENERATING' ? 'Channeling the Force to generate knowledge...' : ''}
           </p>
-        )}
-      </div>
+
+          <div style={{ marginTop: '2rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{ width: '2.5rem', height: '2.5rem', borderRadius: '50%', backgroundColor: 'var(--surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
+               <Sparkles size={20} />
+            </div>
+            <div>
+              <p style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-slate-900)', margin: 0 }}>Jedi Study AI</p>
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-slate-500)', margin: 0 }}>Knowledge Synthesizer</p>
+            </div>
+          </div>
+        </header>
+
+        <div className="prose-content">
+          {body ? (
+            <ReactMarkdown 
+              remarkPlugins={[remarkGfm]}
+              components={{
+                table: ({node, ...props}) => (
+                  <div style={{ overflowX: 'auto' }}>
+                    <table className="styled-table" {...props} />
+                  </div>
+                ),
+              }}
+            >
+              {body}
+            </ReactMarkdown>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '4rem 0', color: 'var(--text-slate-400)' }}>
+               <div style={{ width: '3rem', height: '3rem', borderRadius: '50%', border: '3px solid var(--surface)', borderTopColor: 'var(--primary)', animation: 'spin 1s linear infinite', marginBottom: '1rem' }}></div>
+               <p>Compiling archives...</p>
+            </div>
+          )}
+        </div>
+      </article>
+      <style>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 }

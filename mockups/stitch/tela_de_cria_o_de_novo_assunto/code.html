@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Jedi Study - Create New Subject</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#7c3aed",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#221610",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Public Sans', sans-serif; }
+        .material-symbols-outlined { font-size: 24px; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100">
+<div class="flex h-screen overflow-hidden">
+<!-- Sidebar -->
+<aside class="w-64 flex flex-col bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800">
+<div class="p-6 flex flex-col h-full justify-between">
+<div class="flex flex-col gap-8">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white">
+<span class="material-symbols-outlined">auto_awesome</span>
+</div>
+<div class="flex flex-col">
+<h1 class="text-base font-bold leading-none">Jedi Study</h1>
+<p class="text-xs text-slate-500 dark:text-slate-400">Pro Plan</p>
+</div>
+</div>
+<nav class="flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors" href="#">
+<span class="material-symbols-outlined">route</span>
+<span class="text-sm font-medium">Paths</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 bg-primary/10 text-primary rounded-xl" href="#">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1">book</span>
+<span class="text-sm font-semibold">Subjects</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors" href="#">
+<span class="material-symbols-outlined">database</span>
+<span class="text-sm font-medium">Token Usage</span>
+</a>
+</nav>
+</div>
+<div class="flex flex-col gap-6">
+<div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700">
+<p class="text-xs font-semibold text-slate-900 dark:text-slate-100 mb-2">Upgrade to Pro</p>
+<p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Get unlimited subjects and advanced AI features.</p>
+<button class="w-full py-2 bg-primary text-white text-xs font-bold rounded-lg hover:brightness-110 transition-all">Upgrade Now</button>
+</div>
+<div class="flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-sm font-medium">Profile</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-sm font-medium">Settings</span>
+</a>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col overflow-y-auto">
+<!-- Header -->
+<header class="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-8 flex items-center justify-between sticky top-0 z-10">
+<div class="flex items-center gap-4 flex-1 max-w-xl">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-slate-400" placeholder="Search knowledge base..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-3 ml-4">
+<button class="px-4 py-2 bg-primary text-white text-sm font-bold rounded-xl hover:brightness-110 transition-all flex items-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-lg">add</span>
+                    New Subject
+                </button>
+<button class="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2.5 w-2 h-2 bg-primary rounded-full border-2 border-white dark:border-slate-900"></span>
+</button>
+</div>
+</header>
+<!-- Centered Form Container -->
+<main class="flex-1 p-8 flex justify-center bg-background-light dark:bg-background-dark">
+<div class="max-w-2xl w-full">
+<!-- Navigation Breadcrumb-ish -->
+<div class="flex items-center gap-2 text-slate-400 text-sm mb-6">
+<a class="hover:text-primary transition-colors" href="#">Subjects</a>
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+<span class="text-slate-900 dark:text-slate-100 font-medium">Create New Subject</span>
+</div>
+<!-- Form Card -->
+<div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-8 md:p-12">
+<div class="mb-10 text-center">
+<h2 class="text-3xl font-bold tracking-tight mb-2">Create New Subject</h2>
+<p class="text-slate-500 dark:text-slate-400">Define your new learning area and set your initial goals.</p>
+</div>
+<form class="space-y-8">
+<!-- Subject Name -->
+<div class="space-y-2">
+<label class="text-sm font-semibold text-slate-700 dark:text-slate-300">Subject Name</label>
+<input class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 dark:bg-slate-800 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" placeholder="e.g. Quantum Physics or Digital Art" type="text"/>
+</div>
+<!-- Skill Level -->
+<div class="space-y-2">
+<label class="text-sm font-semibold text-slate-700 dark:text-slate-300">Skill Level</label>
+<div class="grid grid-cols-3 gap-3 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
+<label class="cursor-pointer">
+<input checked="" class="peer hidden" name="skill-level" type="radio" value="beginner"/>
+<div class="text-center py-2.5 rounded-lg text-sm font-medium text-slate-500 dark:text-slate-400 peer-checked:bg-white dark:peer-checked:bg-slate-700 peer-checked:text-primary peer-checked:shadow-sm transition-all">
+                                        Beginner
+                                    </div>
+</label>
+<label class="cursor-pointer">
+<input class="peer hidden" name="skill-level" type="radio" value="intermediate"/>
+<div class="text-center py-2.5 rounded-lg text-sm font-medium text-slate-500 dark:text-slate-400 peer-checked:bg-white dark:peer-checked:bg-slate-700 peer-checked:text-primary peer-checked:shadow-sm transition-all">
+                                        Intermediate
+                                    </div>
+</label>
+<label class="cursor-pointer">
+<input class="peer hidden" name="skill-level" type="radio" value="advanced"/>
+<div class="text-center py-2.5 rounded-lg text-sm font-medium text-slate-500 dark:text-slate-400 peer-checked:bg-white dark:peer-checked:bg-slate-700 peer-checked:text-primary peer-checked:shadow-sm transition-all">
+                                        Advanced
+                                    </div>
+</label>
+</div>
+</div>
+<!-- Description -->
+<div class="space-y-2">
+<label class="text-sm font-semibold text-slate-700 dark:text-slate-300">Description</label>
+<textarea class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 dark:bg-slate-800 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none" placeholder="Briefly describe what you want to learn about this subject..." rows="4"></textarea>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Learning Goals -->
+<div class="space-y-2">
+<label class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                                    Learning Goals
+                                    <span class="text-[10px] px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-slate-400 uppercase font-bold tracking-wider">Optional</span>
+</label>
+<input class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 dark:bg-slate-800 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" placeholder="e.g. Master basics of Relativity" type="text"/>
+</div>
+<!-- Prerequisites -->
+<div class="space-y-2">
+<label class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                                    Prerequisites
+                                    <span class="text-[10px] px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-slate-400 uppercase font-bold tracking-wider">Optional</span>
+</label>
+<input class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 dark:bg-slate-800 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" placeholder="e.g. Basic Calculus" type="text"/>
+</div>
+</div>
+<!-- Submit Button -->
+<div class="pt-4">
+<button class="w-full py-4 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20 hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2" type="submit">
+<span class="material-symbols-outlined">rocket_launch</span>
+                                Create Subject
+                            </button>
+<p class="text-center text-xs text-slate-400 mt-4">This will generate a custom curriculum using AI. You can edit this later.</p>
+</div>
+</form>
+</div>
+<footer class="mt-8 text-center pb-12">
+<button class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-sm font-medium transition-colors">
+                        Cancel and return to dashboard
+                    </button>
+</footer>
+</div>
+</main>
+</div>
+</div>
+</body></html>

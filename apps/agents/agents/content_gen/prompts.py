@@ -33,7 +33,7 @@ def build_prompt(
         instruction = f"Generate content based on this specific user request: {custom_prompt}"
     else:
         content_instructions = {
-            "EXPLANATION": "Write a comprehensive explanation of the key concepts for this phase.",
+            "EXPLANATION": "Write a comprehensive explanation of the key concepts for this phase. Be deep and thorough, but also clear and accessible.",
             "EXAMPLE": "Provide worked examples that demonstrate the core concepts in practice.",
             "SUMMARY": "Write a concise summary of the most important takeaways for this phase.",
             "RESOURCE_LIST": "Curate a list of high-quality resources (articles, tools, books) with brief descriptions.",

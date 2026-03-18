@@ -14,7 +14,7 @@ def create_model():
         system_instruction=SYSTEM_PROMPT,
         generation_config=genai.GenerationConfig(
             response_mime_type="application/json",
-            temperature=0.7,
+            temperature=0.8,
         ),
     )
 
