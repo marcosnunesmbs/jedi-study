@@ -83,10 +83,12 @@ export class TokenUsageService {
       totalCostUsd: number;
     }> = {};
 
+    const uniqueUsers = new Set();
     let totalTokens = 0;
     let totalCostUsd = 0;
 
     for (const r of all) {
+      uniqueUsers.add(r.userId);
       if (!byAgent[r.agentType]) {
         byAgent[r.agentType] = { calls: 0, totalTokens: 0, totalCostUsd: 0 };
       }
@@ -97,10 +99,15 @@ export class TokenUsageService {
       totalCostUsd += r.estimatedCostUsd;
     }
 
+    const totalUsers = uniqueUsers.size;
+    const averageCostPerUser = totalUsers > 0 ? totalCostUsd / totalUsers : 0;
+
     return {
       totalCalls: all.length,
       totalTokens,
       totalCostUsd: Math.round(totalCostUsd * 1000000) / 1000000,
+      totalUsers,
+      averageCostPerUser: Math.round(averageCostPerUser * 1000000) / 1000000,
       byAgent,
     };
   }
