@@ -1,0 +1,14 @@
+**/node_modules
+**/.turbo
+**/dist
+**/.next
+**/coverage
+data/
+*.db
+**/__pycache__
+**/*.pyc
+**/.venv
+apps/agents
+.git
+.env
+.env.local
