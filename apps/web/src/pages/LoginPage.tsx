@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { authApi } from '../api/auth.api';
 import { useAuthStore } from '../store/auth.store';
 import { Zap, ArrowRight, Apple } from 'lucide-react';
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const setAuth = useAuthStore((s) => s.setAuth);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -22,6 +24,8 @@ export default function LoginPage() {
         ? await authApi.login(email, password)
         : await authApi.register(email, password);
 
+      // Clear any cached data from previous users
+      queryClient.clear();
       setAuth(res.accessToken, res.user);
       navigate('/');
     } catch (err: any) {

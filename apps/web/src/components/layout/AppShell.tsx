@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../../store/auth.store';
 import { Sparkles, LayoutDashboard, Coins, LogOut, Search, Bell, Plus, Menu, X, Sun, Moon } from 'lucide-react';
 
 export default function AppShell() {
   const { user, logout } = useAuthStore();
+  const queryClient = useQueryClient();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDark, setIsDark] = useState(() => {
@@ -28,6 +30,11 @@ export default function AppShell() {
 
   const handleNavClick = () => {
     setIsMobileMenuOpen(false);
+  };
+
+  const handleLogout = () => {
+    queryClient.clear();
+    logout();
   };
 
   return (
@@ -96,7 +103,7 @@ export default function AppShell() {
               {isDark ? <Sun size={20} /> : <Moon size={20} />}
             </button>
             <button 
-              onClick={logout}
+              onClick={handleLogout}
               style={{ background: 'none', border: 'none', color: 'var(--text-slate-400)', cursor: 'pointer', display: 'flex' }}
               title="Logout"
             >
