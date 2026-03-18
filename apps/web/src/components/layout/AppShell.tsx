@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../../store/auth.store';
-import { Sparkles, LayoutDashboard, Coins, LogOut, Search, Bell, Plus, Menu, X, Sun, Moon } from 'lucide-react';
+import { Sparkles, LayoutDashboard, Coins, LogOut, Search, Bell, Plus, Menu, X, Sun, Moon, User } from 'lucide-react';
 
 export default function AppShell() {
   const { user, logout } = useAuthStore();
@@ -68,6 +68,10 @@ export default function AppShell() {
             <LayoutDashboard size={20} />
             <span>Dashboard</span>
           </Link>
+          <Link to="/profile" className={`nav-link ${isActive('/profile') ? 'active' : ''}`} onClick={handleNavClick}>
+            <User size={20} />
+            <span>Profile</span>
+          </Link>
           {user?.role === 'ADMIN' && (
             <Link to="/tokens" className={`nav-link ${isActive('/tokens') ? 'active' : ''}`} onClick={handleNavClick}>
               <Coins size={20} />
@@ -84,17 +88,22 @@ export default function AppShell() {
           </div> */}
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0 0.5rem' }}>
-            <img 
-              className="avatar-img" 
-              src={`https://ui-avatars.com/api/?name=${user?.email || 'User'}&background=7c3aed&color=fff`} 
-              alt="User profile" 
-            />
-            <div style={{ flex: 1, overflow: 'hidden' }}>
-              <p style={{ fontSize: '0.875rem', fontWeight: 500, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {user?.email?.split('@')[0] || 'User'}
-              </p>
-              {/* <p style={{ fontSize: '0.75rem', color: 'var(--text-slate-500)', margin: 0 }}>Pro Member</p> */}
-            </div>
+            <Link 
+              to="/profile" 
+              style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1, textDecoration: 'none', color: 'inherit', overflow: 'hidden' }}
+              onClick={handleNavClick}
+            >
+              <img 
+                className="avatar-img" 
+                src={`https://ui-avatars.com/api/?name=${user?.displayName || user?.email || 'User'}&background=7c3aed&color=fff`} 
+                alt="User profile" 
+              />
+              <div style={{ flex: 1, overflow: 'hidden' }}>
+                <p style={{ fontSize: '0.875rem', fontWeight: 500, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {user?.displayName || user?.email?.split('@')[0] || 'User'}
+                </p>
+              </div>
+            </Link>
             <button 
               onClick={toggleTheme}
               style={{ background: 'none', border: 'none', color: 'var(--text-slate-400)', cursor: 'pointer', display: 'flex' }}

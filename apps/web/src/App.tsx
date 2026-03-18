@@ -7,6 +7,7 @@ import PhasePage from './pages/PhasePage';
 import TaskPage from './pages/TaskPage';
 import ContentPage from './pages/ContentPage';
 import TokenUsagePage from './pages/TokenUsagePage';
+import ProfilePage from './pages/ProfilePage';
 import AppShell from './components/layout/AppShell';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
@@ -34,6 +35,7 @@ export default function App() {
         }
       >
         <Route index element={<DashboardPage />} />
+        <Route path="profile" element={<ProfilePage />} />
         <Route path="subjects/:subjectId" element={<SubjectPage />} />
         <Route path="phases/:phaseId" element={<PhasePage />} />
         <Route path="tasks/:taskId" element={<TaskPage />} />
