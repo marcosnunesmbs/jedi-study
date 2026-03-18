@@ -107,7 +107,7 @@ export default function ContentPage() {
               e.preventDefault(); // prevents selection from clearing
               e.stopPropagation();
               navigate(`/phases/${content.phaseId}`, { 
-                state: { autoAskAiPrompt: `Can you explain this excerpt in more detail?\n\n> "${selection.text}"` } 
+                state: { autoAskAiPrompt: `Can you explain this?\n\n> "${selection.text}"` } 
               });
             }}
           >

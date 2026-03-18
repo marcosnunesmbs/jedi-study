@@ -184,7 +184,7 @@ export default function TaskPage() {
             {submissionId && !a && (
               <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(1,4,9,0.8)', backdropFilter: 'blur(4px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
                 <div style={{ width: '3rem', height: '3rem', borderRadius: '50%', border: '3px solid rgba(255,255,255,0.1)', borderTopColor: 'var(--primary)', animation: 'spin 1s linear infinite', marginBottom: '1rem' }}></div>
-                <p style={{ fontWeight: 500, color: 'var(--text-slate-300)' }}>AI Oracle is analyzing your code...</p>
+                <p style={{ fontWeight: 500, color: 'var(--text-slate-300)' }}>AI Oracle is analyzing your response...</p>
               </div>
             )}
           </div>

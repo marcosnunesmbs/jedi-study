@@ -18,7 +18,7 @@ export class ContentService {
       data: {
         phaseId,
         type: contentType,
-        title: customPrompt ? `Custom: ${customPrompt.slice(0, 30)}...` : `${contentType} — ${phase.title}`,
+        title: customPrompt ? `Custom: ${customPrompt.replace(/\n/g, ' ').slice(0, 120)}${customPrompt.length > 120 ? '...' : ''}` : `${contentType} — ${phase.title}`,
         body: '',
         status: 'PENDING',
       },
