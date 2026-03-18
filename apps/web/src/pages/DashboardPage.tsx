@@ -167,7 +167,12 @@ export default function DashboardPage() {
 
               <h3 style={{ margin: '0 0 0.25rem 0', fontSize: '1.125rem', fontWeight: 'bold', color: 'var(--text-slate-900)' }}>{subject.title}</h3>
               <p className="line-clamp-2" style={{ margin: '0 0 1.5rem 0', fontSize: '0.875rem', color: 'var(--text-slate-500)', minHeight: '2.5rem' }}>
-                {subject.goals?.[0] || 'No specific goals set yet.'}
+                {(() => {
+                  try {
+                    const g = typeof subject.goals === 'string' ? JSON.parse(subject.goals) : subject.goals;
+                    return (Array.isArray(g) ? g[0] : g) || 'No specific goals set yet.';
+                  } catch(e) { return 'No specific goals set yet.'; }
+                })()}
               </p>
 
               <div style={{ marginTop: 'auto' }}>
