@@ -1,12 +1,28 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/auth.store';
-import { Sparkles, LayoutDashboard, Coins, LogOut, Search, Bell, Plus, Menu, X } from 'lucide-react';
+import { Sparkles, LayoutDashboard, Coins, LogOut, Search, Bell, Plus, Menu, X, Sun, Moon } from 'lucide-react';
 
 export default function AppShell() {
   const { user, logout } = useAuthStore();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isDark, setIsDark] = useState(() => {
+    return localStorage.getItem('theme') === 'dark' || 
+      (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  });
+
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [isDark]);
+
+  const toggleTheme = () => setIsDark(!isDark);
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -70,6 +86,13 @@ export default function AppShell() {
               </p>
               {/* <p style={{ fontSize: '0.75rem', color: 'var(--text-slate-500)', margin: 0 }}>Pro Member</p> */}
             </div>
+            <button 
+              onClick={toggleTheme}
+              style={{ background: 'none', border: 'none', color: 'var(--text-slate-400)', cursor: 'pointer', display: 'flex' }}
+              title="Toggle Theme"
+            >
+              {isDark ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
             <button 
               onClick={logout}
               style={{ background: 'none', border: 'none', color: 'var(--text-slate-400)', cursor: 'pointer', display: 'flex' }}

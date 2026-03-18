@@ -16,6 +16,19 @@
   --radius-xl: 1rem;
 }
 
+.dark {
+  --background-light: #0f172a;
+  --surface: #1e293b;
+  --border-color: #334155;
+  --text-slate-900: #f8fafc;
+  --text-slate-700: #cbd5e1;
+  --text-slate-600: #94a3b8;
+  --text-slate-500: #64748b;
+  --text-slate-400: #475569;
+  --shadow-soft: 0 2px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -29,7 +42,7 @@ body {
 }
 
 .card {
-  background: white;
+  background-color: var(--background-light);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-soft);
@@ -97,7 +110,7 @@ body {
 /* Sidebar Specific */
 .sidebar {
   width: 260px;
-  background: white;
+  background-color: var(--background-light);
   border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
@@ -126,7 +139,7 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 1rem;
-  background-color: white;
+  background-color: var(--background-light);
   border-bottom: 1px solid var(--border-color);
   position: sticky;
   top: 0;
@@ -293,12 +306,21 @@ body {
   font-family: 'Georgia', serif;
   line-height: 1.625;
   font-size: 1.125rem;
-  color: #1a1a1a;
+  color: var(--text-slate-700);
 }
 
-.prose-content h1, .prose-content h2, .prose-content h3 {
+.prose-content h1, .prose-content h2, .prose-content h3, .prose-content h4 {
   font-family: 'Inter', sans-serif;
-  color: #0f172a;
+  color: var(--text-slate-900);
+}
+
+.prose-content strong {
+  color: var(--text-slate-900);
+}
+
+.prose-content a {
+  color: var(--primary);
+  text-decoration: underline;
 }
 
 .prose-content pre {
@@ -317,7 +339,7 @@ body {
   padding-left: 1.5rem;
   margin-left: 0;
   font-style: italic;
-  color: #4b5563;
+  color: var(--text-slate-500);
 }
 
 .styled-table {
@@ -329,14 +351,14 @@ body {
 }
 
 .styled-table th {
-  background-color: #f9fafb;
-  border-bottom: 2px solid #e5e7eb;
+  background-color: var(--surface);
+  border-bottom: 2px solid var(--border-color);
   text-align: left;
   padding: 12px;
   font-weight: 600;
 }
 
 .styled-table td {
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--border-color);
   padding: 12px;
 }
