@@ -5,16 +5,24 @@ import { PrismaService } from '../../prisma/prisma.service';
 export class PhasesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findOne(id: string) {
+  async findOne(id: string, userId: string) {
     const phase = await this.prisma.phase.findUnique({
       where: { id },
       include: {
+        studyPath: { select: { userId: true } },
         tasks: { orderBy: { order: 'asc' } },
         contents: { orderBy: { createdAt: 'desc' } },
       },
     });
 
-    if (!phase) throw new NotFoundException('Phase not found');
+    if (!phase || phase.studyPath.userId !== userId) {
+      throw new NotFoundException('Phase not found');
+    }
+    
+    // Remove the studyPath object before returning if we don't want to leak it, 
+    // but returning it is fine as it just has userId. We'll leave it or delete it.
+    delete (phase as any).studyPath;
+
     return phase;
   }
 

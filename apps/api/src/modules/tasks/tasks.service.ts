@@ -10,10 +10,11 @@ export class TasksService {
     @InjectQueue('task-analysis') private readonly analysisQueue: Queue,
   ) {}
 
-  async findOne(id: string) {
+  async findOne(id: string, userId: string) {
     const task = await this.prisma.task.findUnique({
       where: { id },
       include: {
+        phase: { include: { studyPath: { select: { userId: true } } } },
         submissions: {
           orderBy: { attempt: 'desc' },
           take: 1,
@@ -22,7 +23,7 @@ export class TasksService {
       },
     });
 
-    if (!task) throw new NotFoundException('Task not found');
+    if (!task || task.phase.studyPath.userId !== userId) throw new NotFoundException('Task not found');
 
     // Parse analysis JSON if it exists
     if (task.submissions[0]?.analysis) {
@@ -31,15 +32,17 @@ export class TasksService {
       (task.submissions[0].analysis as any).improvements = typeof a.improvements === 'string' ? JSON.parse(a.improvements || '[]') : a.improvements;
     }
 
+    delete (task.phase as any).studyPath;
+
     return task;
   }
 
-  async submit(taskId: string, content: string, contentType: string = 'TEXT') {
+  async submit(taskId: string, content: string, contentType: string = 'TEXT', userId: string) {
     const task = await this.prisma.task.findUnique({
       where: { id: taskId },
-      include: { phase: true },
+      include: { phase: { include: { studyPath: { select: { userId: true } } } } },
     });
-    if (!task) throw new NotFoundException('Task not found');
+    if (!task || task.phase.studyPath.userId !== userId) throw new NotFoundException('Task not found');
 
     const lastSubmission = await this.prisma.submission.findFirst({
       where: { taskId },
@@ -98,38 +101,56 @@ export class TasksService {
     return { submissionId: submission.id, jobId: String(job.id) };
   }
 
-  async getSubmissionStatus(submissionId: string) {
+  async getSubmissionStatus(submissionId: string, userId: string) {
     const submission = await this.prisma.submission.findUnique({
       where: { id: submissionId },
-      select: { id: true, status: true, score: true, passed: true },
+      include: {
+        task: { include: { phase: { include: { studyPath: { select: { userId: true } } } } } }
+      }
     });
 
-    if (!submission) throw new NotFoundException('Submission not found');
+    if (!submission || submission.task.phase.studyPath.userId !== userId) {
+      throw new NotFoundException('Submission not found');
+    }
 
     const job = await this.prisma.agentJob.findFirst({
       where: { referenceId: submissionId },
       orderBy: { createdAt: 'desc' },
     });
 
-    return { ...submission, job };
+    return { id: submission.id, status: submission.status, score: submission.score, passed: submission.passed, job };
   }
 
-  async getAnalysis(submissionId: string) {
+  async getAnalysis(submissionId: string, userId: string) {
     const analysis = await this.prisma.analysis.findUnique({
       where: { submissionId },
       include: {
         submission: {
-          select: { taskId: true, attempt: true, status: true },
+          include: { task: { include: { phase: { include: { studyPath: { select: { userId: true } } } } } } },
         },
       },
     });
 
-    if (!analysis) throw new NotFoundException('Analysis not found');
+    if (!analysis || analysis.submission.task.phase.studyPath.userId !== userId) {
+      throw new NotFoundException('Analysis not found');
+    }
 
     return {
-      ...analysis,
+      id: analysis.id,
+      submissionId: analysis.submissionId,
+      agentType: analysis.agentType,
+      feedback: analysis.feedback,
+      score: analysis.score,
+      passed: analysis.passed,
+      rawOutput: analysis.rawOutput,
+      createdAt: analysis.createdAt,
       strengths: JSON.parse(analysis.strengths || '[]'),
       improvements: JSON.parse(analysis.improvements || '[]'),
+      submission: {
+        taskId: analysis.submission.taskId,
+        attempt: analysis.submission.attempt,
+        status: analysis.submission.status
+      }
     };
   }
 }

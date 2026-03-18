@@ -7,6 +7,7 @@ import { map, takeUntil } from 'rxjs/operators';
 import { ContentService } from './content.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import type { Response } from 'express';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
 class GenerateContentDto {
   @IsOptional()
@@ -29,18 +30,19 @@ export class ContentController {
   generate(
     @Param('phaseId') phaseId: string,
     @Body() dto: GenerateContentDto,
+    @CurrentUser() user: any
   ) {
-    return this.content.generateForPhase(phaseId, dto.contentType, dto.customPrompt);
+    return this.content.generateForPhase(phaseId, dto.contentType, dto.customPrompt, user.id);
   }
 
   @Get('content/:id')
-  findOne(@Param('id') id: string) {
-    return this.content.findOne(id);
+  findOne(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.content.findOne(id, user.id);
   }
 
   // SSE endpoint — polls DB until content is COMPLETE
   @Get('content/:id/stream')
-  async streamContent(@Param('id') id: string, @Res() res: Response) {
+  async streamContent(@Param('id') id: string, @Res() res: Response, @CurrentUser() user: any) {
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
@@ -49,6 +51,15 @@ export class ContentController {
     const send = (event: string, data: any) => {
       res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
     };
+
+    try {
+      // Pre-check authorization before polling
+      await this.content.findOne(id, user.id);
+    } catch (e) {
+      send('error', { message: 'Unauthorized or not found' });
+      res.end();
+      return;
+    }
 
     send('status', { status: 'connecting' });
 

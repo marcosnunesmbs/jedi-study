@@ -69,12 +69,23 @@ export default function SubjectPage() {
           </div>
           <div>
             <h1 style={{ fontSize: '2.25rem', fontWeight: 'bold', color: 'var(--text-slate-900)', margin: '0 0 0.5rem 0' }}>{sub?.title}</h1>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
               <span className={`badge badge-indigo`}>{sub?.skillLevel}</span>
               <span style={{ color: 'var(--text-slate-500)', fontSize: '0.875rem', fontWeight: 500 }}>
                 {path?.totalPhases || 0} Phases · ~{path?.estimatedHours || 0}h estimated
               </span>
             </div>
+            {sub?.goals && (
+              <div style={{ color: 'var(--text-slate-600)', fontSize: '0.875rem' }}>
+                <strong>Goals: </strong>
+                {(() => {
+                  try {
+                    const g = typeof sub.goals === 'string' ? JSON.parse(sub.goals) : sub.goals;
+                    return Array.isArray(g) ? g.join(', ') : g;
+                  } catch(e) { return 'No specific goals set yet.'; }
+                })()}
+              </div>
+            )}
           </div>
         </div>
         

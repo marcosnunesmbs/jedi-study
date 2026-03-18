@@ -10,9 +10,15 @@ export class ContentService {
     @InjectQueue('content-generation') private readonly contentQueue: Queue,
   ) {}
 
-  async generateForPhase(phaseId: string, contentType: string = 'EXPLANATION', customPrompt?: string) {
-    const phase = await this.prisma.phase.findUnique({ where: { id: phaseId } });
-    if (!phase) throw new NotFoundException('Phase not found');
+  async generateForPhase(phaseId: string, contentType: string = 'EXPLANATION', customPrompt?: string, userId?: string) {
+    const phase = await this.prisma.phase.findUnique({ 
+      where: { id: phaseId },
+      include: { studyPath: { select: { userId: true } } }
+    });
+    
+    if (!phase || (userId && phase.studyPath.userId !== userId)) {
+      throw new NotFoundException('Phase not found');
+    }
 
     const content = await this.prisma.content.create({
       data: {
@@ -58,9 +64,18 @@ export class ContentService {
     return { contentId: content.id, jobId: String(job.id) };
   }
 
-  async findOne(id: string) {
-    const content = await this.prisma.content.findUnique({ where: { id } });
-    if (!content) throw new NotFoundException('Content not found');
+  async findOne(id: string, userId: string) {
+    const content = await this.prisma.content.findUnique({ 
+      where: { id },
+      include: { phase: { include: { studyPath: { select: { userId: true } } } } }
+    });
+
+    if (!content || content.phase.studyPath.userId !== userId) {
+      throw new NotFoundException('Content not found');
+    }
+
+    delete (content.phase as any).studyPath;
+
     return content;
   }
 }
