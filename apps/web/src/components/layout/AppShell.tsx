@@ -1,30 +1,51 @@
+import { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/auth.store';
-import { Sparkles, LayoutDashboard, Coins, LogOut, Search, Bell, Plus } from 'lucide-react';
+import { Sparkles, LayoutDashboard, Coins, LogOut, Search, Bell, Plus, Menu, X } from 'lucide-react';
 
 export default function AppShell() {
   const { user, logout } = useAuthStore();
   const location = useLocation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const isActive = (path: string) => location.pathname === path;
 
+  const handleNavClick = () => {
+    setIsMobileMenuOpen(false);
+  };
+
   return (
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+      {/* Mobile Overlay */}
+      <div 
+        className={`sidebar-overlay ${isMobileMenuOpen ? 'open' : ''}`}
+        onClick={() => setIsMobileMenuOpen(false)}
+      ></div>
+
       {/* Sidebar */}
-      <aside className="sidebar">
-        <div style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <div style={{ width: '2rem', height: '2rem', backgroundColor: 'var(--primary)', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
-            <Sparkles size={20} />
+      <aside className={`sidebar ${isMobileMenuOpen ? 'open' : ''}`}>
+        <div style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{ width: '2rem', height: '2rem', backgroundColor: 'var(--primary)', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
+              <Sparkles size={20} />
+            </div>
+            <h1 style={{ fontSize: '1.125rem', fontWeight: 'bold', letterSpacing: '-0.025em', margin: 0 }}>Jedi Study</h1>
           </div>
-          <h1 style={{ fontSize: '1.125rem', fontWeight: 'bold', letterSpacing: '-0.025em', margin: 0 }}>Jedi Study</h1>
+          <button 
+            className="mobile-close-btn"
+            onClick={() => setIsMobileMenuOpen(false)}
+            style={{ background: 'none', border: 'none', color: 'var(--text-slate-500)', cursor: 'pointer', display: 'none' }}
+          >
+            <X size={24} />
+          </button>
         </div>
 
         <nav style={{ flex: 1, padding: '0 1rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-          <Link to="/" className={`nav-link ${isActive('/') ? 'active' : ''}`}>
+          <Link to="/" className={`nav-link ${isActive('/') ? 'active' : ''}`} onClick={handleNavClick}>
             <LayoutDashboard size={20} />
             <span>Dashboard</span>
           </Link>
-          <Link to="/tokens" className={`nav-link ${isActive('/tokens') ? 'active' : ''}`}>
+          <Link to="/tokens" className={`nav-link ${isActive('/tokens') ? 'active' : ''}`} onClick={handleNavClick}>
             <Coins size={20} />
             <span>Token Usage</span>
           </Link>
@@ -62,6 +83,22 @@ export default function AppShell() {
 
       {/* Main Content Area */}
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', backgroundColor: 'var(--background-light)' }}>
+        {/* Mobile Header */}
+        <header className="mobile-header">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{ width: '2rem', height: '2rem', backgroundColor: 'var(--primary)', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
+              <Sparkles size={20} />
+            </div>
+            <h1 style={{ fontSize: '1.125rem', fontWeight: 'bold', letterSpacing: '-0.025em', margin: 0 }}>Jedi Study</h1>
+          </div>
+          <button 
+            onClick={() => setIsMobileMenuOpen(true)}
+            style={{ background: 'none', border: 'none', color: 'var(--text-slate-600)', cursor: 'pointer', padding: '0.5rem' }}
+          >
+            <Menu size={24} />
+          </button>
+        </header>
+
         {/* Header */}
         {/* <header style={{ height: '4rem', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2rem', backgroundColor: 'rgba(255, 255, 255, 0.8)', backdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 10 }}>
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '1rem' }}>

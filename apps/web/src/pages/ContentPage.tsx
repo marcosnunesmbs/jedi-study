@@ -10,6 +10,31 @@ export default function ContentPage() {
   const { contentId } = useParams<{ contentId: string }>();
   const navigate = useNavigate();
   const [streamedContent, setStreamedContent] = useState<string | null>(null);
+  const [selection, setSelection] = useState<{ text: string; x: number; y: number } | null>(null);
+
+  useEffect(() => {
+    const handleMouseUp = (e: MouseEvent) => {
+      const sel = window.getSelection();
+      if (sel && sel.toString().trim().length > 0) {
+        setTimeout(() => {
+          try {
+            setSelection({
+              text: sel.toString().trim(),
+              x: e.clientX,
+              y: e.clientY - 60, // Position slightly above the mouse
+            });
+          } catch (err) {
+            setSelection(null);
+          }
+        }, 0);
+      } else {
+        setSelection(null);
+      }
+    };
+
+    document.addEventListener('mouseup', handleMouseUp);
+    return () => document.removeEventListener('mouseup', handleMouseUp);
+  }, []);
 
   const { data: content, refetch } = useQuery({
     queryKey: ['content', contentId],
@@ -57,7 +82,40 @@ export default function ContentPage() {
         Back to Phase
       </button>
 
-      <article style={{ maxWidth: '720px', margin: '0 auto', paddingBottom: '4rem' }}>
+      <article style={{ maxWidth: '720px', margin: '0 auto', paddingBottom: '4rem', position: 'relative' }}>
+        {selection && content?.phaseId && (
+          <div 
+            style={{
+              position: 'fixed',
+              left: `${selection.x}px`,
+              top: `${Math.max(10, selection.y)}px`,
+              transform: 'translateX(-50%)',
+              backgroundColor: 'var(--text-slate-900)',
+              color: 'white',
+              padding: '0.5rem 0.75rem',
+              borderRadius: '0.5rem',
+              boxShadow: 'var(--shadow-lg)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              zIndex: 100,
+              cursor: 'pointer',
+              fontSize: '0.875rem',
+              fontWeight: 500
+            }}
+            onMouseDown={(e) => {
+              e.preventDefault(); // prevents selection from clearing
+              e.stopPropagation();
+              navigate(`/phases/${content.phaseId}`, { 
+                state: { autoAskAiPrompt: `Can you explain this excerpt in more detail?\n\n> "${selection.text}"` } 
+              });
+            }}
+          >
+            <Sparkles size={16} style={{ color: 'var(--primary)' }} />
+            Ask AI about this
+          </div>
+        )}
+
         <header style={{ marginBottom: '3rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
             <span style={{ backgroundColor: 'rgba(124, 58, 237, 0.1)', color: 'var(--primary)', fontSize: '0.75rem', fontWeight: 'bold', padding: '0.25rem 0.75rem', borderRadius: '9999px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>

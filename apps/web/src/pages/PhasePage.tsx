@@ -1,6 +1,6 @@
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { phasesApi } from '../api/phases.api';
 import { contentApi } from '../api/content.api';
 import { ChevronLeft, Radar, CheckCircle, Sparkles, BookOpen, Code, Rocket, HelpCircle, ClipboardList, ChevronRight, FileText, Hourglass, AlertCircle } from 'lucide-react';
@@ -26,8 +26,10 @@ const STATUS_BG: Record<string, string> = {
 export default function PhasePage() {
   const { phaseId } = useParams<{ phaseId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
   const [customPrompt, setCustomPrompt] = useState('');
+  const hasTriggeredPrompt = useRef<string | null>(null);
 
   const { data: phase, isLoading } = useQuery({
     queryKey: ['phase', phaseId],
@@ -48,6 +50,19 @@ export default function PhasePage() {
       setCustomPrompt('');
     },
   });
+
+  useEffect(() => {
+    const prompt = location.state?.autoAskAiPrompt;
+    if (prompt && hasTriggeredPrompt.current !== prompt) {
+      hasTriggeredPrompt.current = prompt;
+      setCustomPrompt(prompt);
+      contentApi.generate(phaseId!, 'CUSTOM', prompt).then(() => {
+        queryClient.invalidateQueries({ queryKey: ['phase', phaseId] });
+      });
+      // Clear state so it doesn't run again on reload
+      navigate('.', { replace: true, state: {} });
+    }
+  }, [location.state, phaseId, navigate, queryClient]);
 
   const p = phase as any;
   const TASK_TYPE_ICON: Record<string, any> = {

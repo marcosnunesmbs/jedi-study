@@ -11,7 +11,7 @@ Content guidelines:
 - Connect theory to practice
 
 Content types you may generate:
-- EXPLANATION: Clear conceptual explanation with examples
+- EXPLANATION: Deep and thorough conceptual explanation with examples
 - EXAMPLE: Worked examples with step-by-step walkthrough
 - SUMMARY: Concise review of key points
 - RESOURCE_LIST: Curated list of resources with descriptions
@@ -30,10 +30,10 @@ def build_prompt(
     context_section = f"\nContext: {task_context}" if task_context else ""
 
     if custom_prompt:
-        instruction = f"Generate content based on this specific user request: {custom_prompt}"
+        instruction = f"Generate content (Deep and thorough conceptual explanation) based on this specific user request: {custom_prompt}"
     else:
         content_instructions = {
-            "EXPLANATION": "Write a comprehensive explanation of the key concepts for this phase. Be deep and thorough, but also clear and accessible.",
+            "EXPLANATION": "Write a comprehensive explanation of the key concepts for this phase. Be deep and thorough and accessible.",
             "EXAMPLE": "Provide worked examples that demonstrate the core concepts in practice.",
             "SUMMARY": "Write a concise summary of the most important takeaways for this phase.",
             "RESOURCE_LIST": "Curate a list of high-quality resources (articles, tools, books) with brief descriptions.",
