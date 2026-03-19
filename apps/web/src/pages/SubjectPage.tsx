@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { studyPathsApi } from '../api/study-paths.api';
 import { subjectsApi } from '../api/subjects.api';
-import { ChevronLeft, GraduationCap, Hourglass, RefreshCw, Map, Sparkles, ListChecks, Clock, Lock, ChevronRight } from 'lucide-react';
+import { ChevronLeft, GraduationCap, Hourglass, RefreshCw, Map, Sparkles, ListChecks, Clock, Lock, ChevronRight, Loader2 } from 'lucide-react';
 
 const STATUS_COLOR: Record<string, string> = {
   LOCKED: 'var(--text-slate-400)',
@@ -93,9 +93,9 @@ export default function SubjectPage() {
           className="btn-primary"
           onClick={() => setShowModal(true)}
           disabled={generateMutation.isPending || path?.status === 'GENERATING'}
-          style={{ background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-slate-600)', padding: '0.625rem 1.25rem' }}
+          style={{ background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-slate-600)', padding: '0.625rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
         >
-          {path?.status === 'GENERATING' ? <Hourglass size={20} /> : <RefreshCw size={20} />}
+          {generateMutation.isPending || path?.status === 'GENERATING' ? <Loader2 size={20} className="animate-spin" /> : <RefreshCw size={20} />}
           {path?.status === 'GENERATING' ? 'Generating...' : 'Regenerate Path'}
         </button>
       </div>
@@ -115,7 +115,9 @@ export default function SubjectPage() {
             className="btn-primary"
             onClick={() => generateMutation.mutate()}
             disabled={generateMutation.isPending}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
           >
+            {generateMutation.isPending ? <Loader2 size={18} className="animate-spin" /> : null}
             {generateMutation.isPending ? 'Generating...' : 'Generate Study Path'}
           </button>
         </div>

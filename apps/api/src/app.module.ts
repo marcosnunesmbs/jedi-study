@@ -34,8 +34,9 @@ import { InitializationService } from './common/services/initialization.service'
       }),
     }),
     BullModule.forRootAsync({
-      useFactory: () => ({
-        redis: process.env.REDIS_URL || 'redis://localhost:6379',
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        redis: config.get('redis.url'),
       }),
     }),
     DatabaseModule,

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { subjectsApi } from '../api/subjects.api';
 import { studyPathsApi } from '../api/study-paths.api';
-import { X, Plus, ArrowRight, Code, Palette, Database, Network, GraduationCap } from 'lucide-react';
+import { X, Plus, ArrowRight, Code, Palette, Database, Network, GraduationCap, Loader2 } from 'lucide-react';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -129,7 +129,8 @@ export default function DashboardPage() {
                 style={{ resize: 'vertical' }}
               />
             </div>
-            <button className="btn-primary" type="submit" disabled={createMutation.isPending} style={{ width: '100%' }}>
+            <button className="btn-primary" type="submit" disabled={createMutation.isPending} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+              {createMutation.isPending ? <Loader2 size={18} className="animate-spin" /> : null}
               {createMutation.isPending ? 'Creating...' : 'Create & Generate Path'}
             </button>
           </form>
@@ -189,14 +190,20 @@ export default function DashboardPage() {
                     <span style={{ width: '0.5rem', height: '0.5rem', borderRadius: '50%', backgroundColor: subject.studyPaths?.length ? '#10b981' : '#94a3b8' }}></span>
                     <span style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-slate-600)' }}>{subject.studyPaths?.length ? 'Active' : 'Pending'}</span>
                   </div>
-                  <button className="btn-primary" style={{ padding: '0.375rem 0.75rem', fontSize: '0.75rem' }} onClick={(e) => {
+                  <button className="btn-primary" style={{ padding: '0.375rem 0.75rem', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }} onClick={(e) => {
                     if (!subject.studyPaths?.length) {
                       e.stopPropagation();
                       generateMutation.mutate(subject.id);
                     }
-                  }}>
-                    {subject.studyPaths?.length ? 'Continue' : 'Generate'}
-                    <ArrowRight size={16} />
+                  }} disabled={generateMutation.isPending}>
+                    {generateMutation.isPending && generateMutation.variables === subject.id ? (
+                      <Loader2 size={14} className="animate-spin" />
+                    ) : subject.studyPaths?.length ? (
+                      'Continue'
+                    ) : (
+                      'Generate'
+                    )}
+                    {!generateMutation.isPending && <ArrowRight size={16} />}
                   </button>
                 </div>
               </div>

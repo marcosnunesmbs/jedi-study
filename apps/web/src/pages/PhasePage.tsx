@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useEffect, useRef } from 'react';
 import { phasesApi } from '../api/phases.api';
 import { contentApi } from '../api/content.api';
-import { ChevronLeft, Radar, CheckCircle, Sparkles, BookOpen, Code, Rocket, HelpCircle, ClipboardList, ChevronRight, FileText, Hourglass, AlertCircle, ChevronDown, Layers, MessageSquareText } from 'lucide-react';
+import { ChevronLeft, Radar, CheckCircle, Sparkles, BookOpen, Code, Rocket, HelpCircle, ClipboardList, ChevronRight, FileText, Hourglass, AlertCircle, ChevronDown, Layers, MessageSquareText, Loader2 } from 'lucide-react';
 
 const STATUS_COLOR: Record<string, string> = {
   COMPLETE: '#10b981',
@@ -179,22 +179,30 @@ export default function PhasePage() {
                   <div style={{ padding: '1.25rem' }}>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
                       <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-slate-400)', textTransform: 'uppercase', width: '100%', marginBottom: '0.25rem' }}>Generate content:</span>
-                      {CONTENT_TYPES.map((ct) => (
-                        <button
-                          key={ct.type}
-                          onClick={() => generateContentMutation.mutate({ type: ct.type, topic })}
-                          disabled={generateContentMutation.isPending}
-                          style={{
-                            background: 'white', border: '1px solid var(--border-color)', color: 'var(--text-slate-600)',
-                            padding: '0.375rem 0.75rem', borderRadius: '0.5rem', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 500,
-                            display: 'flex', alignItems: 'center', gap: '0.25rem', transition: 'all 0.2s'
-                          }}
-                          onMouseOver={(e) => { e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.color = 'var(--primary)'; }}
-                          onMouseOut={(e) => { e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.color = 'var(--text-slate-600)'; }}
-                        >
-                          {ct.label}
-                        </button>
-                      ))}
+                      {CONTENT_TYPES.map((ct) => {
+                        const isThisPending = generateContentMutation.isPending && 
+                          generateContentMutation.variables?.type === ct.type && 
+                          generateContentMutation.variables?.topic === topic;
+                        
+                        return (
+                          <button
+                            key={ct.type}
+                            onClick={() => generateContentMutation.mutate({ type: ct.type, topic })}
+                            disabled={generateContentMutation.isPending}
+                            style={{
+                              background: 'white', border: '1px solid var(--border-color)', color: isThisPending ? 'var(--primary)' : 'var(--text-slate-600)',
+                              padding: '0.375rem 0.75rem', borderRadius: '0.5rem', cursor: generateContentMutation.isPending ? 'not-allowed' : 'pointer', fontSize: '0.75rem', fontWeight: 500,
+                              display: 'flex', alignItems: 'center', gap: '0.25rem', transition: 'all 0.2s',
+                              opacity: generateContentMutation.isPending && !isThisPending ? 0.6 : 1
+                            }}
+                            onMouseOver={(e) => { if (!generateContentMutation.isPending) { e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.color = 'var(--primary)'; } }}
+                            onMouseOut={(e) => { if (!generateContentMutation.isPending) { e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.color = 'var(--text-slate-600)'; } }}
+                          >
+                            {isThisPending ? <Loader2 size={14} className="animate-spin" /> : null}
+                            {ct.label}
+                          </button>
+                        );
+                      })}
                     </div>
 
                     <div style={{ display: 'grid', gap: '0.5rem' }}>
@@ -300,8 +308,12 @@ export default function PhasePage() {
               onClick={() => generateContentMutation.mutate({ type: 'CUSTOM' })}
               disabled={generateContentMutation.isPending || !customPrompt.trim()}
             >
-              <Sparkles size={20} />
-              Generate
+              {generateContentMutation.isPending && generateContentMutation.variables?.type === 'CUSTOM' ? (
+                <Loader2 size={20} className="animate-spin" />
+              ) : (
+                <Sparkles size={20} />
+              )}
+              {generateContentMutation.isPending && generateContentMutation.variables?.type === 'CUSTOM' ? 'Generating...' : 'Generate'}
             </button>
           </div>
         </div>
