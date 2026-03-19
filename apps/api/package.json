@@ -11,7 +11,6 @@
     "test": "jest"
   },
   "dependencies": {
-    "@jedi-study/shared": "workspace:*",
     "@nestjs/axios": "^3.0.0",
     "@nestjs/bull": "^10.0.0",
     "@nestjs/common": "^10.0.0",

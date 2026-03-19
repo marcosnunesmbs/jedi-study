@@ -1,81 +1,101 @@
-# Jedi Study ⚡
+# Jedi Study
 
 Jedi Study is an AI-powered personalized learning platform that generates custom study paths, educational content, and provides automated analysis of student tasks. It uses a multi-agent architecture powered by Google's Gemini 1.5 Pro to guide users through any subject from beginner to advanced levels.
 
-## 🚀 Features
+## Features
 
-- **Personalized Study Paths**: Generate structured learning journeys based on your specific goals and skill level.
-- **AI Content Generation**: Instant generation of:
-  - Conceptual Explanations
-  - Practical Examples
-  - Concise Summaries
-  - Curated Resource Lists
-- **"Ask AI" Custom Prompts**: Request specific clarifications or analogies for any learning phase.
-- **Automated Task Analysis**: Submit your answers or project descriptions and receive:
-  - Numerical Score (0-100)
-  - Detailed Feedback
-  - Strengths and Areas for Improvement
-- **Token & Cost Monitoring**: Real-time dashboard to track API consumption and estimated costs based on your `.env` configuration.
-- **Modern Light Interface**: Clean, minimal, and focused user experience.
+- **Personalized Study Paths** — Generate structured learning journeys based on your goals and skill level.
+- **AI Content Generation** — On-demand explanations, examples, summaries, and resource lists.
+- **Ask AI** — Custom prompts for specific clarifications or analogies within any learning phase.
+- **Automated Task Analysis** — Submit answers or project descriptions and receive a score (0–100), detailed feedback, strengths, and improvements.
+- **Token & Cost Monitoring** — Real-time dashboard to track API consumption and estimated costs.
 
-## 🏗️ Architecture
+## Architecture
 
-The project is built as a monorepo with three main services:
+Three independent services — each has its own `Dockerfile` and `docker-compose.yml`:
 
-1.  **Web (Frontend)**: React 18, TypeScript, TanStack Query, Zustand, and React Markdown.
-2.  **API (Backend)**: NestJS, Prisma ORM, MySQL, and Bull MQ for background processing.
-3.  **Agents (AI Layer)**: Python 3.11, FastAPI, and Google Generative AI (Gemini).
-4.  **Infrastructure**: Redis (as a message broker for Bull) and MySQL 8.0.
+| Service | Stack | Default port |
+|---------|-------|-------------|
+| **web** | React 18, TypeScript, Vite, TanStack Query, Zustand | 5177 |
+| **api** | NestJS, TypeORM, MySQL, BullMQ | 3003 |
+| **agents** | Python 3.11, FastAPI, Google Generative AI (Gemini) | 8008 |
 
-## 🛠️ Getting Started
+External dependencies (provided via env vars): **MySQL 8** and **Redis**.
+
+## Getting Started
 
 ### Prerequisites
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+- MySQL 8 and Redis running (locally or as managed services)
 - [Google Gemini API Key](https://aistudio.google.com/app/apikey)
 
-### Setup
+### Running each service
 
-1.  **Clone the repository**:
-    ```bash
-    git clone <your-repo-url>
-    cd jedi-study
-    ```
+Each service is fully independent. Run them in any order after configuring their `.env`.
 
-2.  **Configure Environment Variables**:
-    Create a `.env` file in the root directory based on `.env.example`:
-    ```bash
-    cp .env.example .env
-    ```
-    Fill in your `GOOGLE_API_KEY` and adjust other settings if necessary.
+#### Agents
 
-3.  **Run with Docker Compose**:
-    ```bash
-    docker compose up -d
-    ```
-
-4.  **Initialize the Database**:
-    Run the Prisma migrations to set up the MySQL schema:
-    ```bash
-    docker compose exec api npx prisma db push
-    ```
-
-5.  **Access the Application**:
-    - **Frontend**: [http://localhost:5177](http://localhost:5177)
-    - **API**: [http://localhost:3001](http://localhost:3001)
-    - **Agents**: [http://localhost:8000](http://localhost:8000)
-
-## 📊 Monitoring Costs
-
-The project includes a specialized panel to monitor token consumption. You can configure the costs per 1 million tokens in your `.env`:
-
-```env
-GEMINI_COST_INPUT_1M=3.50
-GEMINI_COST_OUTPUT_1M=10.50
+```bash
+cd apps/agents
+cp .env.example .env   # fill in GOOGLE_API_KEY
+docker compose up --build
+# → http://localhost:8008/health
 ```
 
-Access the **Token Usage** section in the sidebar to view real-time statistics and historical data.
+#### API
 
-## 📜 License
+```bash
+cd apps/api
+cp .env.example .env   # fill in DATABASE_URL, REDIS_URL, JWT_SECRET
+docker compose up --build
+# → http://localhost:3003
+```
+
+The API runs `prisma migrate deploy` on startup to apply database migrations automatically.
+
+#### Web
+
+```bash
+cd apps/web
+cp .env.example .env   # set VITE_API_URL=http://localhost:3003
+docker compose up --build
+# → http://localhost:5177
+```
+
+### Local development (without Docker)
+
+```bash
+# Agents
+cd apps/agents
+pip install -r requirements.txt
+uvicorn main:app --reload --port 8008
+
+# API
+cd apps/api
+npm install
+npm run start:dev
+
+# Web
+cd apps/web
+npm install
+npm run dev
+```
+
+## Environment variables
+
+Each app has its own `.env.example`. Key variables:
+
+| App | Variable | Description |
+|-----|----------|-------------|
+| agents | `GOOGLE_API_KEY` | Gemini API key |
+| agents | `GEMINI_INPUT_PRICE_PER_1M` / `GEMINI_OUTPUT_PRICE_PER_1M` | Cost per 1M tokens (USD) |
+| api | `DATABASE_URL` | MySQL connection string |
+| api | `REDIS_URL` | Redis connection string |
+| api | `JWT_SECRET` | Generate with `openssl rand -hex 32` |
+| api | `AGENTS_BASE_URL` | URL of the agents service |
+| web | `VITE_API_URL` | URL of the API (baked in at build time) |
+
+## License
 
 This project is for educational purposes. Feel free to use and modify it.

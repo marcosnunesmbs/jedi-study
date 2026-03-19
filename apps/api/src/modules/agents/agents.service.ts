@@ -1,10 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
-import type { AgentResponse } from '@jedi-study/shared';
-import type { StudyPathOutput } from '@jedi-study/shared';
-import type { TaskAnalysisOutput } from '@jedi-study/shared';
-import type { ProjectAnalysisOutput } from '@jedi-study/shared';
+import type { AgentResponse, StudyPathOutput, TaskAnalysisOutput, ProjectAnalysisOutput } from '../../shared';
 
 export interface GeneratePathPayload {
   subjectTitle: string;

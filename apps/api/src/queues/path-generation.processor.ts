@@ -9,7 +9,7 @@ import { StudyPath } from '../database/entities/study-path.entity';
 import { AgentJob } from '../database/entities/agent-job.entity';
 import { AgentsService } from '../modules/agents/agents.service';
 import { TokenUsageService } from '../modules/token-usage/token-usage.service';
-import { StudyPathOutputSchema } from '@jedi-study/shared';
+import { StudyPathOutputSchema } from '../shared';
 
 interface PathGenerationJob {
   studyPathId: string;

@@ -1,0 +1,17 @@
+services:
+  agents:
+    image: marcosnunesmbs/jedi-study-agents:latest
+    restart: unless-stopped
+    ports:
+      - "${AGENTS_PORT:-8008}:8000"
+    environment:
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-1.5-pro}
+      GEMINI_INPUT_PRICE_PER_1M: ${GEMINI_INPUT_PRICE_PER_1M:-3.50}
+      GEMINI_OUTPUT_PRICE_PER_1M: ${GEMINI_OUTPUT_PRICE_PER_1M:-10.50}
+      API_ORIGIN: ${API_ORIGIN:-http://localhost:3003}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3

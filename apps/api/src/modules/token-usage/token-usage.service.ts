@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
 import { TokenUsage } from '../../database/entities/token-usage.entity';
-import type { TokenUsageInfo } from '@jedi-study/shared';
+import type { TokenUsageInfo } from '../../shared';
 
 export interface RecordTokenUsageDto {
   userId: string;

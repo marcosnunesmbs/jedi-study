@@ -1,0 +1,8 @@
+services:
+  web:
+    image: marcosnunesmbs/jedi-study:latest
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-5177}:80"
+    environment:
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:3003}

@@ -2,23 +2,24 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-RUN npm install -g pnpm
+COPY package.json ./
+RUN npm install
 
-COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
-COPY packages/shared/package.json ./packages/shared/
-COPY apps/web/package.json ./apps/web/
+COPY . .
 
-RUN pnpm install --frozen-lockfile
-
-COPY packages/shared ./packages/shared
-COPY apps/web ./apps/web
-
-RUN pnpm --filter @jedi-study/shared run build
-RUN pnpm --filter web run build
+ARG VITE_API_URL=__VITE_API_URL__
+ENV VITE_API_URL=$VITE_API_URL
+RUN npm run build
 
 FROM nginx:alpine
 
-COPY --from=builder /app/apps/web/dist /usr/share/nginx/html
-COPY apps/web/nginx.conf /etc/nginx/conf.d/default.conf
+RUN apk add --no-cache dumb-init
+
+COPY --from=builder /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 EXPOSE 80
+
+ENTRYPOINT ["dumb-init", "--", "/entrypoint.sh"]

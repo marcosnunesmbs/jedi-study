@@ -2,20 +2,11 @@
   "name": "jedi-study",
   "private": true,
   "scripts": {
-    "build": "turbo run build",
-    "dev": "turbo run dev --parallel",
-    "lint": "turbo run lint",
-    "test": "turbo run test",
-    "docker:up": "docker compose up -d",
-    "docker:down": "docker compose down",
-    "docker:logs": "docker compose logs -f"
-  },
-  "devDependencies": {
-    "turbo": "^2.0.0"
+    "docker:agents": "docker compose -f apps/agents/docker-compose.yml up --build",
+    "docker:api": "docker compose -f apps/api/docker-compose.yml up --build",
+    "docker:web": "docker compose -f apps/web/docker-compose.yml up --build"
   },
   "engines": {
-    "node": ">=20.0.0",
-    "pnpm": ">=10.0.0"
-  },
-  "packageManager": "pnpm@10.0.0"
+    "node": ">=20.0.0"
+  }
 }

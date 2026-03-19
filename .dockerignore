@@ -8,7 +8,9 @@ data/
 **/__pycache__
 **/*.pyc
 **/.venv
-apps/agents
 .git
 .env
 .env.local
+mockups/
+conductor/
+openspec/
