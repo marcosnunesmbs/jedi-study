@@ -103,7 +103,7 @@ export default function LoginPage() {
             {!loading && <ArrowRight size={18} />}
           </button>
         </form>
-
+{/* 
         <div style={{ position: 'relative', margin: '2rem 0' }}>
           <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center' }}>
             <div style={{ width: '100%', borderTop: '1px solid var(--border-color)' }}></div>
@@ -127,7 +127,7 @@ export default function LoginPage() {
             <Apple size={18} />
             Apple
           </button>
-        </div>
+        </div> */}
       </div>
 
       <p style={{ marginTop: '2rem', fontSize: '0.875rem', color: 'var(--text-slate-500)' }}>
