@@ -9,7 +9,7 @@ services:
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-1.5-pro}
       API_ORIGIN: http://api:3000
     ports:
-      - "8000:8000"
+      - "8008:8000"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 10s
@@ -30,7 +30,7 @@ services:
       NODE_ENV: production
       API_PORT: 3000
     ports:
-      - "3001:3000"
+      - "3003:3000"
     volumes:
       - ./apps/api/src:/app/apps/api/src
       - ./packages/shared/src:/app/packages/shared/src
@@ -45,7 +45,7 @@ services:
       dockerfile: apps/web/Dockerfile
     restart: unless-stopped
     environment:
-      VITE_API_URL: http://localhost:3001
+      VITE_API_URL: http://localhost:3003
     ports:
       - "5177:80"
     depends_on:
