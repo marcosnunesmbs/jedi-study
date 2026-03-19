@@ -1,21 +1,12 @@
-import json
-import re
 import time
-from typing import Any, TypeVar, Type
+from typing import Any
 from pydantic import BaseModel
+from google import genai
 from config import settings
 
 
-def extract_json(text: str):
-    """Extract the first valid JSON value from text, handling markdown fences and trailing content."""
-    text = text.strip()
-    fence = re.search(r"```(?:json)?\s*([\s\S]*?)\s*```", text)
-    if fence:
-        text = fence.group(1).strip()
-    obj, _ = json.JSONDecoder().raw_decode(text)
-    return obj
-
-T = TypeVar("T", bound=BaseModel)
+def get_client() -> genai.Client:
+    return genai.Client(api_key=settings.google_api_key)
 
 
 class TokenUsageInfo(BaseModel):
@@ -39,7 +30,6 @@ def calculate_cost(input_tokens: int, output_tokens: int) -> float:
 
 
 def build_usage(response, start_time: float) -> TokenUsageInfo:
-    """Build TokenUsageInfo from a Gemini GenerateContentResponse."""
     usage_meta = getattr(response, "usage_metadata", None)
     input_tokens = getattr(usage_meta, "prompt_token_count", 0) or 0
     output_tokens = getattr(usage_meta, "candidates_token_count", 0) or 0

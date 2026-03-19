@@ -1,19 +1,7 @@
 import time
-import google.generativeai as genai
-from config import settings
-from agents.base import AgentResponse, build_usage
+from agents.base import AgentResponse, build_usage, get_client
 from agents.content_gen.prompts import SYSTEM_PROMPT, build_prompt
-
-
-def create_model():
-    genai.configure(api_key=settings.google_api_key)
-    return genai.GenerativeModel(
-        model_name=settings.gemini_model,
-        system_instruction=SYSTEM_PROMPT,
-        generation_config=genai.GenerationConfig(
-            temperature=0.7,
-        ),
-    )
+from config import settings
 
 
 async def generate_content(
@@ -24,14 +12,19 @@ async def generate_content(
     task_context: str = "",
     custom_prompt: str = "",
 ) -> AgentResponse:
-    model = create_model()
+    client = get_client()
     prompt = build_prompt(phase_title, phase_objectives, content_type, topic_title, task_context, custom_prompt)
 
     start_time = time.time()
-    response = model.generate_content(prompt)
-
-    content_text = response.text.strip()
+    response = await client.aio.models.generate_content(
+        model=settings.gemini_model,
+        contents=prompt,
+        config={
+            "system_instruction": SYSTEM_PROMPT,
+            "temperature": 0.7,
+        },
+    )
 
     usage = build_usage(response, start_time)
 
-    return AgentResponse(data=content_text, usage=usage)
+    return AgentResponse(data=response.text.strip(), usage=usage)

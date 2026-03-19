@@ -1,21 +1,8 @@
 import time
-import google.generativeai as genai
-from config import settings
-from agents.base import AgentResponse, build_usage, extract_json
+from agents.base import AgentResponse, build_usage, get_client
 from agents.path_generator.output_schema import StudyPathOutput
 from agents.path_generator.prompts import SYSTEM_PROMPT, build_prompt
-
-
-def create_model():
-    genai.configure(api_key=settings.google_api_key)
-    return genai.GenerativeModel(
-        model_name=settings.gemini_model,
-        system_instruction=SYSTEM_PROMPT,
-        generation_config=genai.GenerationConfig(
-            response_mime_type="application/json",
-            temperature=0.8,
-        ),
-    )
+from config import settings
 
 
 async def generate_study_path(
@@ -24,21 +11,22 @@ async def generate_study_path(
     goals: list[str],
     user_context: str = "",
 ) -> AgentResponse:
-    model = create_model()
+    client = get_client()
     prompt = build_prompt(subject_title, skill_level, goals, user_context)
 
     start_time = time.time()
-    response = model.generate_content(prompt)
+    response = await client.aio.models.generate_content(
+        model=settings.gemini_model,
+        contents=prompt,
+        config={
+            "system_instruction": SYSTEM_PROMPT,
+            "response_mime_type": "application/json",
+            "response_json_schema": StudyPathOutput.model_json_schema(),
+            "temperature": 0.8,
+        },
+    )
 
-    data = extract_json(response.text)
-
-    # Gemini may wrap the response in an array
-    if isinstance(data, list) and len(data) > 0:
-        data = data[0]
-
-    # Validate with Pydantic
-    output = StudyPathOutput(**data)
-
+    output = StudyPathOutput.model_validate_json(response.text)
     usage = build_usage(response, start_time)
 
     return AgentResponse(data=output.model_dump(), usage=usage)
