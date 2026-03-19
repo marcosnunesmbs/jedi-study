@@ -1,0 +1,64 @@
+services:
+  agents:
+    build:
+      context: ./apps/agents
+    restart: unless-stopped
+    ports:
+      - "8008:8000"
+    volumes:
+      - ./apps/agents:/app
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    environment:
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-1.5-pro}
+      GEMINI_INPUT_PRICE_PER_1M: ${GEMINI_COST_INPUT_1M:-3.50}
+      GEMINI_OUTPUT_PRICE_PER_1M: ${GEMINI_COST_OUTPUT_1M:-10.50}
+      API_ORIGIN: http://api:3000
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - jedi
+
+  api:
+    build:
+      context: ./apps/api
+      target: builder
+    restart: unless-stopped
+    ports:
+      - "3003:3000"
+    volumes:
+      - ./apps/api/src:/app/src
+    command: npm run start:dev
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-24h}
+      AGENTS_BASE_URL: http://agents:8000
+      CORS_ORIGIN: http://localhost:5177
+      NODE_ENV: development
+    depends_on:
+      agents:
+        condition: service_healthy
+    networks:
+      - jedi
+
+  web:
+    build:
+      context: ./apps/web
+    restart: unless-stopped
+    ports:
+      - "5177:80"
+    environment:
+      VITE_API_URL: http://localhost:3003
+    depends_on:
+      - api
+    networks:
+      - jedi
+
+networks:
+  jedi:
+    driver: bridge

@@ -30,9 +30,47 @@ External dependencies (provided via env vars): **MySQL 8** and **Redis**.
 - MySQL 8 and Redis running (locally or as managed services)
 - [Google Gemini API Key](https://aistudio.google.com/app/apikey)
 
-### Running each service
+### Running all services together (recommended)
 
-Each service is fully independent. Run them in any order after configuring their `.env`.
+Both options below use a single `docker-compose` at the project root and read variables from the root `.env`.
+
+```bash
+cp .env.example .env   # fill in all required variables (see table below)
+```
+
+#### Production images (pull from Docker Hub)
+
+```bash
+docker compose up -d
+# web  → http://localhost:5177
+# api  → http://localhost:3003
+# agents → http://localhost:8008/health
+```
+
+#### Development (build from source with hot reload)
+
+```bash
+docker compose -f docker-compose.dev.yml up --build
+# web  → http://localhost:5177
+# api  → http://localhost:3003  (nest start --watch)
+# agents → http://localhost:8008/health  (uvicorn --reload)
+```
+
+> **Hot reload:** API and agents reload on file changes via volume mounts. The web is served via nginx (static build); changes require rebuilding the container.
+
+To stop either stack:
+
+```bash
+docker compose down
+# or
+docker compose -f docker-compose.dev.yml down
+```
+
+---
+
+### Running each service individually
+
+Each service also has its own `docker-compose.yml` inside its folder. Run them in any order after configuring their `.env`.
 
 #### Agents
 
