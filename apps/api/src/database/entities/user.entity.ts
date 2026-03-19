@@ -1,5 +1,5 @@
 import { Entity, PrimaryColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, BeforeInsert } from 'typeorm';
-import { createId } from '@paralleldrive/cuid2';
+import { randomUUID } from 'crypto';
 import { Subject } from './subject.entity';
 import { StudyPath } from './study-path.entity';
 import { TokenUsage } from './token-usage.entity';
@@ -12,7 +12,7 @@ export enum UserRole {
 @Entity('User')
 export class User {
   @PrimaryColumn()
-  id: string = createId();
+  id: string = randomUUID();
 
   @Column({ unique: true })
   email: string;
@@ -48,7 +48,7 @@ export class User {
   @BeforeInsert()
   generateId() {
     if (!this.id) {
-      this.id = createId();
+      this.id = randomUUID();
     }
   }
 }

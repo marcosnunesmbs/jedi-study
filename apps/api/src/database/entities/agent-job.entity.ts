@@ -1,5 +1,5 @@
 import { Entity, PrimaryColumn, Column, CreateDateColumn, BeforeInsert, Index } from 'typeorm';
-import { createId } from '@paralleldrive/cuid2';
+import { randomUUID } from 'crypto';
 
 @Entity('AgentJob')
 export class AgentJob {
@@ -35,7 +35,7 @@ export class AgentJob {
   @BeforeInsert()
   generateId() {
     if (!this.id) {
-      this.id = createId();
+      this.id = randomUUID();
     }
   }
 }

@@ -9,7 +9,9 @@
       "Bash(docker-compose logs:*)",
       "Bash(docker-compose exec:*)",
       "Bash(docker exec:*)",
-      "Bash(docker-compose restart:*)"
+      "Bash(docker-compose restart:*)",
+      "Bash(node -e \":*)",
+      "Bash(npx typeorm-ts-node-commonjs:*)"
     ]
   }
 }

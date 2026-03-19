@@ -1,5 +1,5 @@
 import { Entity, PrimaryColumn, Column, CreateDateColumn, ManyToOne, OneToOne, BeforeInsert, Index, JoinColumn } from 'typeorm';
-import { createId } from '@paralleldrive/cuid2';
+import { randomUUID } from 'crypto';
 import { Task } from './task.entity';
 import { Analysis } from './analysis.entity';
 
@@ -43,7 +43,7 @@ export class Submission {
   @BeforeInsert()
   generateId() {
     if (!this.id) {
-      this.id = createId();
+      this.id = randomUUID();
     }
   }
 }

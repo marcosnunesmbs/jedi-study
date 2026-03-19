@@ -1,12 +1,12 @@
 import { Entity, PrimaryColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany, BeforeInsert, Index, JoinColumn } from 'typeorm';
-import { createId } from '@paralleldrive/cuid2';
+import { randomUUID } from 'crypto';
 import { User } from './user.entity';
 import { StudyPath } from './study-path.entity';
 
 @Entity('Subject')
 export class Subject {
   @PrimaryColumn()
-  id: string = createId();
+  id: string = randomUUID();
 
   @Index()
   @Column()
@@ -40,7 +40,7 @@ export class Subject {
   @BeforeInsert()
   generateId() {
     if (!this.id) {
-      this.id = createId();
+      this.id = randomUUID();
     }
   }
 }

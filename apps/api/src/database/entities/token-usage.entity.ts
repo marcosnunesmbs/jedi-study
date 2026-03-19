@@ -1,5 +1,5 @@
 import { Entity, PrimaryColumn, Column, CreateDateColumn, ManyToOne, BeforeInsert, Index, JoinColumn } from 'typeorm';
-import { createId } from '@paralleldrive/cuid2';
+import { randomUUID } from 'crypto';
 import { User } from './user.entity';
 
 @Entity('TokenUsage')
@@ -51,7 +51,7 @@ export class TokenUsage {
   @BeforeInsert()
   generateId() {
     if (!this.id) {
-      this.id = createId();
+      this.id = randomUUID();
     }
   }
 }

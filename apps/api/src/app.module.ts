@@ -30,7 +30,7 @@ import { InitializationService } from './common/services/initialization.service'
         type: 'mysql',
         url: config.get('database.url'),
         autoLoadEntities: true,
-        synchronize: true, // Equivalent to prisma migrate dev in dev
+        synchronize: false,
       }),
     }),
     BullModule.forRootAsync({

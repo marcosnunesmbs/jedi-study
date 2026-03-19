@@ -1,5 +1,5 @@
 import { Entity, PrimaryColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany, BeforeInsert, Index, JoinColumn } from 'typeorm';
-import { createId } from '@paralleldrive/cuid2';
+import { randomUUID } from 'crypto';
 import { User } from './user.entity';
 import { Subject } from './subject.entity';
 import { Phase } from './phase.entity';
@@ -8,7 +8,7 @@ import { Phase } from './phase.entity';
 @Index(['subjectId', 'isActive'])
 export class StudyPath {
   @PrimaryColumn()
-  id: string = createId();
+  id: string = randomUUID();
 
   @Index()
   @Column()
@@ -56,7 +56,7 @@ export class StudyPath {
   @BeforeInsert()
   generateId() {
     if (!this.id) {
-      this.id = createId();
+      this.id = randomUUID();
     }
   }
 }

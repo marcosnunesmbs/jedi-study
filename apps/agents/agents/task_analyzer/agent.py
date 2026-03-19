@@ -1,8 +1,7 @@
-import json
 import time
 import google.generativeai as genai
 from config import settings
-from agents.base import AgentResponse, build_usage
+from agents.base import AgentResponse, build_usage, extract_json
 from agents.task_analyzer.output_schema import TaskAnalysisOutput
 from agents.task_analyzer.prompts import SYSTEM_PROMPT, build_prompt
 
@@ -30,7 +29,7 @@ async def analyze_task(
     start_time = time.time()
     response = model.generate_content(prompt)
 
-    data = json.loads(response.text.strip())
+    data = extract_json(response.text)
     if isinstance(data, list) and len(data) > 0:
         data = data[0]
     output = TaskAnalysisOutput(**data)

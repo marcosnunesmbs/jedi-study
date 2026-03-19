@@ -1,7 +1,19 @@
+import json
+import re
 import time
 from typing import Any, TypeVar, Type
 from pydantic import BaseModel
 from config import settings
+
+
+def extract_json(text: str):
+    """Extract the first valid JSON value from text, handling markdown fences and trailing content."""
+    text = text.strip()
+    fence = re.search(r"```(?:json)?\s*([\s\S]*?)\s*```", text)
+    if fence:
+        text = fence.group(1).strip()
+    obj, _ = json.JSONDecoder().raw_decode(text)
+    return obj
 
 T = TypeVar("T", bound=BaseModel)
 
