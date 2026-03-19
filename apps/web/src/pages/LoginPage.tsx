@@ -3,17 +3,40 @@ import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { authApi } from '../api/auth.api';
 import { useAuthStore } from '../store/auth.store';
-import { Zap, ArrowRight, Apple } from 'lucide-react';
+import { Zap, ArrowRight } from 'lucide-react';
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const setAuth = useAuthStore((s) => s.setAuth);
+
+  const [mode, setMode] = useState<'login' | 'register'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [displayName, setDisplayName] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [passwordMatchError, setPasswordMatchError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const switchMode = (next: 'login' | 'register') => {
+    setMode(next);
+    setError('');
+    setPasswordMatchError('');
+    setConfirmPassword('');
+  };
+
+  const handleConfirmBlur = () => {
+    if (confirmPassword && confirmPassword !== password) {
+      setPasswordMatchError("Passwords don't match");
+    } else {
+      setPasswordMatchError('');
+    }
+  };
+
+  const isSubmitDisabled =
+    loading ||
+    (mode === 'register' && (!!passwordMatchError || confirmPassword !== password));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,14 +45,14 @@ export default function LoginPage() {
     try {
       const res: any = mode === 'login'
         ? await authApi.login(email, password)
-        : await authApi.register(email, password);
+        : await authApi.register(email, password, displayName);
 
-      // Clear any cached data from previous users
       queryClient.clear();
       setAuth(res.accessToken, res.user);
       navigate('/');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Authentication failed');
+      const msg = err.response?.data?.message;
+      setError(typeof msg === 'string' ? msg : msg?.message || 'Authentication failed');
     } finally {
       setLoading(false);
     }
@@ -50,7 +73,7 @@ export default function LoginPage() {
         <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', letterSpacing: '-0.025em', color: 'var(--text-slate-900)', margin: 0 }}>Jedi Study</h1>
       </div>
 
-      {/* Login Card */}
+      {/* Card */}
       <div className="card" style={{ width: '100%', maxWidth: '400px', padding: '2rem' }}>
         <div style={{ marginBottom: '2rem' }}>
           <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--text-slate-900)', margin: 0 }}>
@@ -62,6 +85,25 @@ export default function LoginPage() {
         </div>
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+
+          {/* Name — register only */}
+          {mode === 'register' && (
+            <div>
+              <label className="label" htmlFor="displayName">Name</label>
+              <input
+                className="input-field"
+                id="displayName"
+                type="text"
+                placeholder="Your name"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                autoComplete="name"
+                required
+              />
+            </div>
+          )}
+
+          {/* Email */}
           <div>
             <label className="label" htmlFor="email">Email address</label>
             <input
@@ -71,10 +113,12 @@ export default function LoginPage() {
               placeholder="name@company.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
               required
             />
           </div>
 
+          {/* Password */}
           <div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.375rem' }}>
               <label className="label" htmlFor="password" style={{ margin: 0 }}>Password</label>
@@ -82,58 +126,68 @@ export default function LoginPage() {
                 <a href="#" style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--primary)', textDecoration: 'none' }}>Forgot password?</a>
               )}
             </div>
-            <div style={{ position: 'relative' }}>
-              <input
-                className="input-field"
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={6}
-              />
-            </div>
+            <input
+              className="input-field"
+              id="password"
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+              required
+              minLength={6}
+            />
           </div>
 
-          {error && <p style={{ color: '#dc2626', fontSize: '0.8125rem', fontWeight: 500, margin: 0 }}>{error}</p>}
+          {/* Confirm Password — register only */}
+          {mode === 'register' && (
+            <div>
+              <label className="label" htmlFor="confirmPassword">Confirm Password</label>
+              <input
+                className="input-field"
+                id="confirmPassword"
+                type="password"
+                placeholder="••••••••"
+                value={confirmPassword}
+                onChange={(e) => {
+                  setConfirmPassword(e.target.value);
+                  if (passwordMatchError) setPasswordMatchError('');
+                }}
+                onBlur={handleConfirmBlur}
+                autoComplete="new-password"
+                required
+              />
+              {passwordMatchError && (
+                <p style={{ color: '#dc2626', fontSize: '0.8125rem', fontWeight: 500, margin: '0.375rem 0 0' }}>
+                  {passwordMatchError}
+                </p>
+              )}
+            </div>
+          )}
 
-          <button className="btn-primary" type="submit" disabled={loading} style={{ width: '100%', marginTop: '0.25rem' }}>
+          {/* API error */}
+          {error && (
+            <p style={{ color: '#dc2626', fontSize: '0.8125rem', fontWeight: 500, margin: 0 }}>
+              {error}
+            </p>
+          )}
+
+          <button
+            className="btn-primary"
+            type="submit"
+            disabled={isSubmitDisabled}
+            style={{ width: '100%', marginTop: '0.25rem' }}
+          >
             <span>{loading ? 'Processing...' : mode === 'login' ? 'Sign In' : 'Create Account'}</span>
             {!loading && <ArrowRight size={18} />}
           </button>
         </form>
-{/* 
-        <div style={{ position: 'relative', margin: '2rem 0' }}>
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center' }}>
-            <div style={{ width: '100%', borderTop: '1px solid var(--border-color)' }}></div>
-          </div>
-          <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', fontSize: '0.75rem', textTransform: 'uppercase' }}>
-            <span style={{ backgroundColor: 'white', padding: '0 0.75rem', color: 'var(--text-slate-400)', fontWeight: 500 }}>Or continue with</span>
-          </div>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-          <button style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', padding: '0.625rem', border: '1px solid var(--border-color)', borderRadius: '0.5rem', backgroundColor: 'white', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-slate-700)' }}>
-            <svg style={{ width: '1rem', height: '1rem' }} viewBox="0 0 24 24">
-              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path>
-              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path>
-              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"></path>
-              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"></path>
-            </svg>
-            Google
-          </button>
-          <button style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', padding: '0.625rem', border: '1px solid var(--border-color)', borderRadius: '0.5rem', backgroundColor: 'white', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-slate-700)' }}>
-            <Apple size={18} />
-            Apple
-          </button>
-        </div> */}
       </div>
 
       <p style={{ marginTop: '2rem', fontSize: '0.875rem', color: 'var(--text-slate-500)' }}>
         {mode === 'login' ? "Don't have an account?" : 'Already have an account?'}{' '}
         <button
-          onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
+          onClick={() => switchMode(mode === 'login' ? 'register' : 'login')}
           style={{ backgroundColor: 'transparent', border: 'none', color: 'var(--primary)', fontWeight: 600, cursor: 'pointer', padding: '0 0.25rem' }}
         >
           {mode === 'login' ? 'Create an account' : 'Sign In'}

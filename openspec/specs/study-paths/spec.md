@@ -23,6 +23,24 @@ The system MUST allow a user to trigger the generation of a study path for one o
 - **WHEN** o usuário solicita a geração da trilha
 - **THEN** o sistema gera uma trilha onde cada fase contém uma lista de tópicos lógicos relacionados aos seus objetivos
 
+#### Scenario: Geração é assíncrona
+- GIVEN um usuário autenticado e um assunto válido
+- WHEN o usuário solicita a geração da trilha
+- THEN o sistema registra a trilha com status GENERATING e retorna imediatamente o `studyPathId`
+- AND a geração ocorre em background via fila de jobs
+
+#### Scenario: Versionamento ao regerar
+- GIVEN um assunto que já possui uma trilha ativa
+- WHEN o usuário solicita a geração de uma nova trilha
+- THEN o sistema arquiva a trilha anterior (status ARCHIVED, isActive=false)
+- AND cria uma nova trilha com versão incrementada como a ativa (isActive=true)
+
+#### Scenario: Falha na geração
+- GIVEN um processo de geração em andamento
+- WHEN o Agents Service retorna erro após esgotar as tentativas de retry
+- THEN o sistema atualiza a trilha para status ARCHIVED
+- AND registra o erro no AgentJob correspondente
+
 ### Requirement: Get Generation Status
 The system MUST provide the current status of the study path generation process.
 
@@ -51,3 +69,23 @@ The system MUST return the details of a specific study path by its ID.
 - GIVEN um usuário autenticado
 - WHEN o usuário solicita uma trilha pelo ID que lhe pertence
 - THEN o sistema retorna a estrutura completa da trilha
+
+#### Scenario: Acesso negado a trilha de outro usuário
+- GIVEN um usuário autenticado
+- WHEN o usuário solicita uma trilha que pertence a outro usuário
+- THEN o sistema retorna erro de não autorizado ou não encontrado
+
+### Requirement: Study Path Status Lifecycle
+The system MUST transition a study path through a defined set of statuses reflecting the generation and learning progress.
+
+#### Scenario: Ciclo completo de geração
+- GIVEN uma nova trilha criada
+- THEN seu status inicial é GENERATING
+- AND após geração bem-sucedida das fases e tarefas, transita para ACTIVE
+- AND ao término de todas as fases pelo aluno, transita para ARCHIVED
+
+#### Scenario: Apenas uma trilha ativa por assunto
+- GIVEN um assunto que já possui uma trilha com isActive=true
+- WHEN uma nova geração é concluída com sucesso
+- THEN somente a nova trilha possui isActive=true
+- AND todas as versões anteriores têm isActive=false

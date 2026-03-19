@@ -134,6 +134,8 @@ Each app has its own `.env.example`. Key variables:
 | api | `AGENTS_BASE_URL` | URL of the agents service |
 | web | `VITE_API_URL` | URL of the API (baked in at build time) |
 
+## Architecture
+the current architecture is documented in: [ARCHITECTURE.md](./ARCHITECTURE.md)
 ## License
 
 This project is for educational purposes. Feel free to use and modify it.

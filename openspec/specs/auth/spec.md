@@ -58,3 +58,26 @@ The system MUST return the profile information of the currently authenticated us
 - GIVEN um usuário que acabou de alterar seu nome de exibição
 - WHEN o usuário solicita seus dados via endpoint /me ou recebe a resposta da atualização
 - THEN os dados retornados DEVEM refletir o novo nome de exibição imediatamente
+
+### Requirement: Route Protection
+The system MUST reject requests to protected endpoints that do not carry a valid JWT token.
+
+#### Scenario: Requisição sem token
+- GIVEN um endpoint protegido da API
+- WHEN uma requisição é enviada sem o header `Authorization: Bearer`
+- THEN o sistema retorna HTTP 401 Unauthorized
+
+#### Scenario: Token expirado ou inválido
+- GIVEN um usuário com um token JWT vencido ou adulterado
+- WHEN o usuário envia uma requisição com esse token
+- THEN o sistema retorna HTTP 401 Unauthorized
+- AND o cliente SHOULD redirecionar o usuário para a tela de login
+
+### Requirement: Admin Seed on Initialization
+The system SHALL create a default admin user on first boot if no admin user exists.
+
+#### Scenario: Primeiro boot sem admin
+- GIVEN um banco de dados sem nenhum usuário com role ADMIN
+- WHEN a aplicação é inicializada
+- THEN o sistema cria automaticamente um usuário administrador com credenciais padrão definidas no ambiente
+- AND esse usuário possui role ADMIN e acesso aos endpoints administrativos
