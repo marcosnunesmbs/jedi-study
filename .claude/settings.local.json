@@ -11,7 +11,10 @@
       "Bash(docker exec:*)",
       "Bash(docker-compose restart:*)",
       "Bash(node -e \":*)",
-      "Bash(npx typeorm-ts-node-commonjs:*)"
+      "Bash(npx typeorm-ts-node-commonjs:*)",
+      "Bash(find /e/jedi-study/apps/agents -maxdepth 2 -name *.py -type f)",
+      "Bash(find /e/jedi-study/apps/web/src -type f \\\\\\(-name *.ts -o -name *.tsx \\\\\\))",
+      "Bash(find /e/jedi-study/apps/agents/agents -type f -name *.py)"
     ]
   }
 }
