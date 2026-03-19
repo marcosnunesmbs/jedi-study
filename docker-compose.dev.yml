@@ -13,7 +13,7 @@ services:
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-1.5-pro}
       GEMINI_INPUT_PRICE_PER_1M: ${GEMINI_COST_INPUT_1M:-3.50}
       GEMINI_OUTPUT_PRICE_PER_1M: ${GEMINI_COST_OUTPUT_1M:-10.50}
-      API_ORIGIN: http://api:3000
+      API_ORIGIN: http://localhost:3003
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 10s
@@ -37,7 +37,7 @@ services:
       REDIS_URL: ${REDIS_URL}
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-24h}
-      AGENTS_BASE_URL: http://agents:8000
+      AGENTS_BASE_URL: http://localhost:8008
       CORS_ORIGIN: http://localhost:5177
       NODE_ENV: development
     depends_on:
@@ -47,11 +47,15 @@ services:
       - jedi
 
   web:
-    build:
-      context: ./apps/web
+    image: node:20-alpine
+    working_dir: /app
     restart: unless-stopped
     ports:
-      - "5177:80"
+      - "5177:5173"
+    volumes:
+      - ./apps/web:/app
+      - /app/node_modules
+    command: sh -c "npm install && npm run dev"
     environment:
       VITE_API_URL: http://localhost:3003
     depends_on:
