@@ -73,6 +73,23 @@ export class SubjectsService {
     return this.subjectRepository.save(subject);
   }
 
+  async update(id: string, userId: string, data: {
+    title?: string;
+    description?: string;
+    skillLevel?: string;
+    goals?: string[];
+  }) {
+    const subject = await this.subjectRepository.findOne({ where: { id, userId } });
+    if (!subject) throw new NotFoundException('Subject not found');
+
+    if (data.title !== undefined) subject.title = data.title;
+    if (data.description !== undefined) subject.description = data.description;
+    if (data.skillLevel !== undefined) subject.skillLevel = data.skillLevel;
+    if (data.goals !== undefined) subject.goals = JSON.stringify(data.goals);
+
+    return this.subjectRepository.save(subject);
+  }
+
   async delete(id: string, userId: string) {
     const subject = await this.subjectRepository.findOne({ where: { id, userId } });
     if (!subject) throw new NotFoundException('Subject not found');

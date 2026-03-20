@@ -1,5 +1,5 @@
 import {
-  Controller, Get, Post, Delete, Body, Param,
+  Controller, Get, Post, Delete, Body, Param, Patch,
 } from '@nestjs/common';
 import { IsString, IsOptional, IsArray, IsEnum } from 'class-validator';
 import { SubjectsService } from './subjects.service';
@@ -8,6 +8,25 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 class CreateSubjectDto {
   @IsString()
   title: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @IsOptional()
+  @IsEnum(['BEGINNER', 'INTERMEDIATE', 'ADVANCED'])
+  skillLevel?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  goals?: string[];
+}
+
+class UpdateSubjectDto {
+  @IsOptional()
+  @IsString()
+  title?: string;
 
   @IsOptional()
   @IsString()
@@ -40,6 +59,11 @@ export class SubjectsController {
   @Post()
   create(@Body() dto: CreateSubjectDto, @CurrentUser() user: any) {
     return this.subjects.create(user.id, dto);
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() dto: UpdateSubjectDto, @CurrentUser() user: any) {
+    return this.subjects.update(id, user.id, dto);
   }
 
   @Delete(':id')

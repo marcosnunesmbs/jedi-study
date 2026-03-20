@@ -12,9 +12,7 @@ O que está **incluído** nessa spec:
 O que está **fora do escopo**:
 - Moderação de conteúdo genérica (não relacionada a injection)
 - Filtros de PII (Personally Identifiable Information)
-
 ## Requirements
-
 ### Requirement: Prompt Injection Detection
 The system MUST analyze all user-provided prompts for potential injection attacks before they are queued for background processing.
 
@@ -36,3 +34,19 @@ The safety check MUST be performed synchronously within the request-response cyc
 - **WHEN** a user requests content generation
 - **THEN** the API performs the safety check before returning a response to the user
 - **AND** the user receives a confirmation that the task was queued (if safe) or an error (if unsafe).
+
+### Requirement: Subject Goals Validation
+The system MUST validate both the subject title AND goals in the safety check before generating a study path.
+
+#### Scenario: Safe Title and Goals
+- **WHEN** user provides a valid title and goals for a subject
+- **AND** both title and goals pass the safety check
+- **THEN** the system proceeds with path generation
+
+#### Scenario: Unsafe Goals
+- **WHEN** user provides goals containing potential injection content
+- **AND** the safety check detects unsafe content in goals
+- **THEN** the system returns a 400 Bad Request error
+- **AND** the error message includes the reason for rejection
+- **AND** the path generation is NOT initiated
+

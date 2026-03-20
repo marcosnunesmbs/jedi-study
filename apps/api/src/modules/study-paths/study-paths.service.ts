@@ -27,8 +27,9 @@ export class StudyPathsService {
     });
     if (!subject) throw new NotFoundException('Subject not found');
 
-    // Safety and Budget Validation
-    await this.safety.validateInput(userId, subject.title);
+    // Safety and Budget Validation (title + goals)
+    const goals = JSON.parse(subject.goals || '[]');
+    await this.safety.validateInput(userId, subject.title, goals);
 
     // Archive existing active path
     await this.studyPathRepository.update(

@@ -15,9 +15,19 @@ export class SafetyService {
     private readonly tokenUsage: TokenUsageService,
   ) {}
 
-  async validateInput(userId: string, prompt: string): Promise<void> {
+  async validateInput(userId: string, prompt: string, goals?: string[]): Promise<void> {
+    // Build full prompt with goals for comprehensive safety check
+    // Limit goals to avoid overly long prompts
+    const goalsText = goals?.length
+      ? goals.slice(0, 5).join(', ') + (goals.length > 5 ? '...' : '')
+      : '';
+    
+    const fullPrompt = goalsText
+      ? `${prompt}\n\nGoals: ${goalsText}`
+      : prompt;
+
     // 1. Prompt Safety check
-    const response = await this.agents.checkSafety({ prompt });
+    const response = await this.agents.checkSafety({ prompt: fullPrompt });
 
     // Record safety check usage
     await this.tokenUsage.record({

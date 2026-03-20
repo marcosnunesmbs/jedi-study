@@ -24,8 +24,10 @@ export default function SubjectPage() {
   const { subjectId } = useParams<{ subjectId: string }>();
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
+  const [editForm, setEditForm] = useState({ title: '', skillLevel: 'BEGINNER', goals: '' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { data: subject } = useQuery({
+  const { data: subject, refetch: refetchSubject } = useQuery({
     queryKey: ['subject', subjectId],
     queryFn: () => subjectsApi.get(subjectId!),
   });
@@ -36,10 +38,52 @@ export default function SubjectPage() {
     retry: false,
   });
 
+  const updateMutation = useMutation({
+    mutationFn: (data: { title?: string; skillLevel?: string; goals?: string[] }) =>
+      subjectsApi.update(subjectId!, data),
+  });
+
   const generateMutation = useMutation({
     mutationFn: () => studyPathsApi.generate(subjectId!),
     onSuccess: () => refetch(),
   });
+
+  const openModal = () => {
+    const sub = subject as any;
+    const goals = sub?.goals 
+      ? (typeof sub.goals === 'string' ? JSON.parse(sub.goals) : sub.goals)
+      : [];
+    setEditForm({
+      title: sub?.title || '',
+      skillLevel: sub?.skillLevel || 'BEGINNER',
+      goals: Array.isArray(goals) ? goals.join(', ') : '',
+    });
+    setShowModal(true);
+  };
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    try {
+      const goalsArray = editForm.goals
+        .split(',')
+        .map(g => g.trim())
+        .filter(g => g.length > 0);
+
+      await updateMutation.mutateAsync({
+        title: editForm.title,
+        skillLevel: editForm.skillLevel,
+        goals: goalsArray,
+      });
+
+      await refetchSubject();
+      setShowModal(false);
+      generateMutation.mutate();
+    } catch (error) {
+      console.error('Failed to update subject:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     const path = studyPath as any;
@@ -92,7 +136,7 @@ export default function SubjectPage() {
         
         <button
           className="btn-primary"
-          onClick={() => setShowModal(true)}
+          onClick={openModal}
           disabled={generateMutation.isPending || path?.status === 'GENERATING'}
           style={{ background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-slate-600)', padding: '0.625rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
         >
@@ -203,28 +247,64 @@ export default function SubjectPage() {
       
       {showModal && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
-          <div className="card" style={{ padding: '2rem', maxWidth: '400px', width: '90%', animation: 'fadeIn 0.2s ease-out' }}>
-            <h3 style={{ margin: '0 0 1rem 0', color: 'var(--text-slate-900)' }}>Regenerate Study Path?</h3>
+          <div className="card" style={{ padding: '2rem', maxWidth: '500px', width: '90%', animation: 'fadeIn 0.2s ease-out' }}>
+            <h3 style={{ margin: '0 0 1.5rem 0', color: 'var(--text-slate-900)' }}>Edit & Regenerate Path</h3>
+            
+            <div style={{ marginBottom: '1rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-slate-700)' }}>Title</label>
+              <input
+                type="text"
+                value={editForm.title}
+                onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                style={{ width: '100%', padding: '0.625rem', border: '1px solid var(--border-color)', borderRadius: '0.5rem', fontSize: '0.875rem' }}
+                placeholder="e.g., Learn Python"
+              />
+            </div>
+
+            <div style={{ marginBottom: '1rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-slate-700)' }}>Skill Level</label>
+              <select
+                value={editForm.skillLevel}
+                onChange={(e) => setEditForm({ ...editForm, skillLevel: e.target.value })}
+                style={{ width: '100%', padding: '0.625rem', border: '1px solid var(--border-color)', borderRadius: '0.5rem', fontSize: '0.875rem', backgroundColor: 'white' }}
+              >
+                <option value="BEGINNER">Beginner</option>
+                <option value="INTERMEDIATE">Intermediate</option>
+                <option value="ADVANCED">Advanced</option>
+              </select>
+            </div>
+
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-slate-700)' }}>Goals (comma-separated)</label>
+              <input
+                type="text"
+                value={editForm.goals}
+                onChange={(e) => setEditForm({ ...editForm, goals: e.target.value })}
+                style={{ width: '100%', padding: '0.625rem', border: '1px solid var(--border-color)', borderRadius: '0.5rem', fontSize: '0.875rem' }}
+                placeholder="e.g., Build a web app, Learn data structures"
+              />
+            </div>
+
             <p style={{ margin: '0 0 1.5rem 0', color: 'var(--text-slate-600)', lineHeight: 1.5, fontSize: '0.875rem' }}>
-              Are you sure you want to regenerate this path? <br/><br/>
               <strong>Warning:</strong> All current progress will be completely deleted.
             </p>
+            
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
-              <button 
+              <button
                 onClick={() => setShowModal(false)}
-                style={{ padding: '0.5rem 1rem', background: 'transparent', border: '1px solid var(--border-color)', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 500, color: 'var(--text-slate-600)' }}
+                disabled={isSubmitting}
+                style={{ padding: '0.5rem 1rem', background: 'transparent', border: '1px solid var(--border-color)', borderRadius: '0.5rem', cursor: isSubmitting ? 'not-allowed' : 'pointer', fontWeight: 500, color: 'var(--text-slate-600)', opacity: isSubmitting ? 0.6 : 1 }}
               >
                 Cancel
               </button>
-              <button 
-                onClick={() => {
-                  setShowModal(false);
-                  generateMutation.mutate();
-                }}
+              <button
+                onClick={handleSubmit}
+                disabled={isSubmitting || !editForm.title.trim()}
                 className="btn-primary"
-                style={{ padding: '0.5rem 1rem', backgroundColor: '#ef4444', border: 'none' }}
+                style={{ padding: '0.5rem 1rem', backgroundColor: '#ef4444', border: 'none', opacity: isSubmitting || !editForm.title.trim() ? 0.6 : 1, cursor: isSubmitting || !editForm.title.trim() ? 'not-allowed' : 'pointer' }}
               >
-                Regenerate
+                {isSubmitting ? <Loader2 size={18} className="animate-spin" style={{ marginRight: '0.5rem' }} /> : null}
+                {isSubmitting ? 'Saving...' : 'Save & Regenerate'}
               </button>
             </div>
           </div>
