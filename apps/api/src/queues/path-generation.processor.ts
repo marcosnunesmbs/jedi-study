@@ -101,6 +101,7 @@ export class PathGenerationProcessor {
           { id: studyPathId },
           {
             status: 'ACTIVE',
+            welcomeMessage: parsed.welcomeMessage,
             totalPhases: parsed.totalPhases,
             estimatedHours: parsed.estimatedHours,
             rawAgentOutput: JSON.stringify(parsed),
