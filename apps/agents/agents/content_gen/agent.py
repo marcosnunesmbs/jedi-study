@@ -25,6 +25,6 @@ async def generate_content(
         },
     )
 
-    usage = build_usage(response, start_time)
+    usage = build_usage(response, start_time, model_name=settings.gemini_model)
 
     return AgentResponse(data=response.text.strip(), usage=usage)

@@ -6,6 +6,7 @@ import { Repository } from 'typeorm';
 import { StudyPath } from '../../database/entities/study-path.entity';
 import { Subject } from '../../database/entities/subject.entity';
 import { AgentJob } from '../../database/entities/agent-job.entity';
+import { SafetyService } from '../agents/safety.service';
 
 @Injectable()
 export class StudyPathsService {
@@ -17,6 +18,7 @@ export class StudyPathsService {
     @InjectRepository(AgentJob)
     private readonly agentJobRepository: Repository<AgentJob>,
     @InjectQueue('path-generation') private readonly pathQueue: Queue,
+    private readonly safety: SafetyService,
   ) {}
 
   async generate(subjectId: string, userId: string) {
@@ -24,6 +26,9 @@ export class StudyPathsService {
       where: { id: subjectId, userId },
     });
     if (!subject) throw new NotFoundException('Subject not found');
+
+    // Safety and Budget Validation
+    await this.safety.validateInput(userId, subject.title);
 
     // Archive existing active path
     await this.studyPathRepository.update(

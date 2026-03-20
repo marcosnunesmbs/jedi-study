@@ -27,6 +27,6 @@ async def generate_study_path(
     )
 
     output = StudyPathOutput.model_validate_json(response.text)
-    usage = build_usage(response, start_time)
+    usage = build_usage(response, start_time, model_name=settings.gemini_model)
 
     return AgentResponse(data=output.model_dump(), usage=usage)

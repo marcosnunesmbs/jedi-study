@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
-import type { AgentResponse, StudyPathOutput, TaskAnalysisOutput, ProjectAnalysisOutput } from '../../shared';
+import type { AgentResponse, StudyPathOutput, TaskAnalysisOutput, ProjectAnalysisOutput, SafetyOutput } from '../../shared';
 
 export interface GeneratePathPayload {
   subjectTitle: string;
@@ -27,11 +27,27 @@ export interface AnalyzeTaskPayload {
   projectContext?: Record<string, unknown>;
 }
 
+export interface SafetyCheckPayload {
+  prompt: string;
+}
+
 @Injectable()
 export class AgentsService {
   private readonly logger = new Logger(AgentsService.name);
 
   constructor(private readonly http: HttpService) {}
+
+  async checkSafety(
+    payload: SafetyCheckPayload,
+  ): Promise<AgentResponse<SafetyOutput>> {
+    const { data } = await firstValueFrom(
+      this.http.post<AgentResponse<SafetyOutput>>(
+        '/agents/safety',
+        payload,
+      ),
+    );
+    return data;
+  }
 
   async generatePath(
     payload: GeneratePathPayload,

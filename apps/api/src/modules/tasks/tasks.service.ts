@@ -7,6 +7,7 @@ import { Task } from '../../database/entities/task.entity';
 import { Submission } from '../../database/entities/submission.entity';
 import { Analysis } from '../../database/entities/analysis.entity';
 import { AgentJob } from '../../database/entities/agent-job.entity';
+import { SafetyService } from '../agents/safety.service';
 
 @Injectable()
 export class TasksService {
@@ -20,6 +21,7 @@ export class TasksService {
     @InjectRepository(AgentJob)
     private readonly agentJobRepository: Repository<AgentJob>,
     @InjectQueue('task-analysis') private readonly analysisQueue: Queue,
+    private readonly safety: SafetyService,
   ) {}
 
   async findOne(id: string, userId: string) {
@@ -58,6 +60,9 @@ export class TasksService {
       relations: ['phase', 'phase.studyPath'],
     });
     if (!task || task.phase.studyPath.userId !== userId) throw new NotFoundException('Task not found');
+
+    // Safety and Budget Validation
+    await this.safety.validateInput(userId, content);
 
     const lastSubmission = await this.submissionRepository.findOne({
       where: { taskId },

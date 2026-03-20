@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AgentsService } from './agents.service';
+import { SafetyService } from './safety.service';
+import { TokenUsageModule } from '../token-usage/token-usage.module';
 
 @Module({
   imports: [
@@ -13,8 +15,9 @@ import { AgentsService } from './agents.service';
       }),
       inject: [ConfigService],
     }),
+    TokenUsageModule,
   ],
-  providers: [AgentsService],
-  exports: [AgentsService],
+  providers: [AgentsService, SafetyService],
+  exports: [AgentsService, SafetyService],
 })
 export class AgentsModule {}

@@ -2,7 +2,13 @@ export type AgentType =
   | 'PATH_GENERATOR'
   | 'CONTENT_GEN'
   | 'TASK_ANALYZER'
-  | 'PROJECT_ANALYZER';
+  | 'PROJECT_ANALYZER'
+  | 'SAFETY';
+
+export interface SafetyOutput {
+  safe_prompt: boolean;
+  reason: string;
+}
 
 export interface TokenUsageInfo {
   model: string;

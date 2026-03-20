@@ -6,6 +6,7 @@ import { Repository } from 'typeorm';
 import { Content } from '../../database/entities/content.entity';
 import { Phase } from '../../database/entities/phase.entity';
 import { AgentJob } from '../../database/entities/agent-job.entity';
+import { SafetyService } from '../agents/safety.service';
 
 @Injectable()
 export class ContentService {
@@ -17,6 +18,7 @@ export class ContentService {
     @InjectRepository(AgentJob)
     private readonly agentJobRepository: Repository<AgentJob>,
     @InjectQueue('content-generation') private readonly contentQueue: Queue,
+    private readonly safety: SafetyService,
   ) {}
 
   async generateForPhase(phaseId: string, contentType: string = 'EXPLANATION', customPrompt?: string, userId?: string, topic?: string) {
@@ -27,6 +29,12 @@ export class ContentService {
     
     if (!phase || (userId && phase.studyPath.userId !== userId)) {
       throw new NotFoundException('Phase not found');
+    }
+
+    // Safety and Budget Validation
+    if (customPrompt || topic) {
+      const promptToValidate = customPrompt || topic;
+      await this.safety.validateInput(phase.studyPath.userId, promptToValidate);
     }
 
     const contentTitle = topic 
