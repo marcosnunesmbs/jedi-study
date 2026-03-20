@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { tokenUsageApi } from '../api/token-usage.api';
-import { Download, CreditCard, Coins, Zap, Users, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
+import { CreditCard, Coins, Zap, Users, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 
 export default function TokenUsagePage() {
   const [page, setPage] = useState(0);
@@ -35,10 +35,6 @@ export default function TokenUsagePage() {
           <h2 style={{ fontSize: '1.875rem', fontWeight: 'bold', letterSpacing: '-0.025em', color: 'var(--text-slate-900)', margin: '0 0 0.5rem 0' }}>Token Consumption</h2>
           <p style={{ color: 'var(--text-slate-500)', fontWeight: 500, margin: 0 }}>Monitoring AI resource consumption and efficiency</p>
         </div>
-        <button className="btn-primary" style={{ background: 'white', color: 'var(--text-slate-700)', border: '1px solid var(--border-color)', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <Download size={18} />
-          Export Report
-        </button>
       </div>
 
       {/* Metric Cards */}
@@ -91,10 +87,10 @@ export default function TokenUsagePage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <span style={{ fontSize: '0.75rem', color: 'var(--text-slate-500)' }}>Per page:</span>
-              <select 
-                value={limit} 
+              <select
+                value={limit}
                 onChange={(e) => { setLimit(Number(e.target.value)); setPage(0); }}
-                style={{ padding: '0.25rem', borderRadius: '0.375rem', border: '1px solid var(--border-color)', fontSize: '0.75rem', outline: 'none' }}
+                style={{ padding: '0.25rem', borderRadius: '0.375rem', border: '1px solid var(--border-color)', fontSize: '0.75rem', outline: 'none', backgroundColor: 'var(--surface)', color: 'var(--text-slate-900)' }}
               >
                 <option value={10}>10</option>
                 <option value={20}>20</option>
@@ -160,11 +156,11 @@ export default function TokenUsagePage() {
             Showing <strong>{page * limit + 1}</strong> to <strong>{Math.min((page + 1) * limit, totalRecords)}</strong> of <strong>{totalRecords}</strong> records
           </div>
           <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button 
-              className="btn-primary" 
-              onClick={() => setPage(p => Math.max(0, p - 1))} 
+            <button
+              className="btn-primary"
+              onClick={() => setPage(p => Math.max(0, p - 1))}
               disabled={page === 0}
-              style={{ padding: '0.4rem', background: page === 0 ? 'var(--border-color)' : 'white', color: 'var(--text-slate-700)', border: '1px solid var(--border-color)', opacity: page === 0 ? 0.5 : 1 }}
+              style={{ padding: '0.4rem', background: page === 0 ? 'var(--border-color)' : 'var(--surface)', color: 'var(--text-slate-700)', border: '1px solid var(--border-color)', opacity: page === 0 ? 0.5 : 1 }}
             >
               <ChevronLeft size={16} />
             </button>
@@ -173,11 +169,11 @@ export default function TokenUsagePage() {
               <span style={{ color: 'var(--text-slate-400)' }}>/</span>
               <span style={{ color: 'var(--text-slate-400)' }}>{totalPages || 1}</span>
             </div>
-            <button 
-              className="btn-primary" 
-              onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} 
+            <button
+              className="btn-primary"
+              onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
               disabled={page >= totalPages - 1}
-              style={{ padding: '0.4rem', background: page >= totalPages - 1 ? 'var(--border-color)' : 'white', color: 'var(--text-slate-700)', border: '1px solid var(--border-color)', opacity: page >= totalPages - 1 ? 0.5 : 1 }}
+              style={{ padding: '0.4rem', background: page >= totalPages - 1 ? 'var(--border-color)' : 'var(--surface)', color: 'var(--text-slate-700)', border: '1px solid var(--border-color)', opacity: page >= totalPages - 1 ? 0.5 : 1 }}
             >
               <ChevronRight size={16} />
             </button>

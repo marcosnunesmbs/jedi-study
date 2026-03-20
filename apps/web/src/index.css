@@ -96,6 +96,7 @@ body {
   outline: none;
   transition: all 0.2s ease;
   font-size: 0.875rem;
+  color: var(--text-slate-900);
 }
 
 .input-field:focus {

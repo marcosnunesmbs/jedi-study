@@ -256,7 +256,7 @@ export default function SubjectPage() {
                 type="text"
                 value={editForm.title}
                 onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
-                style={{ width: '100%', padding: '0.625rem', border: '1px solid var(--border-color)', borderRadius: '0.5rem', fontSize: '0.875rem' }}
+                style={{ width: '100%', padding: '0.625rem', border: '1px solid var(--border-color)', borderRadius: '0.5rem', fontSize: '0.875rem', backgroundColor: 'var(--surface)', color: 'var(--text-slate-900)' }}
                 placeholder="e.g., Learn Python"
               />
             </div>
@@ -266,7 +266,7 @@ export default function SubjectPage() {
               <select
                 value={editForm.skillLevel}
                 onChange={(e) => setEditForm({ ...editForm, skillLevel: e.target.value })}
-                style={{ width: '100%', padding: '0.625rem', border: '1px solid var(--border-color)', borderRadius: '0.5rem', fontSize: '0.875rem', backgroundColor: 'white' }}
+                style={{ width: '100%', padding: '0.625rem', border: '1px solid var(--border-color)', borderRadius: '0.5rem', fontSize: '0.875rem', backgroundColor: 'var(--surface)', color: 'var(--text-slate-900)' }}
               >
                 <option value="BEGINNER">Beginner</option>
                 <option value="INTERMEDIATE">Intermediate</option>
@@ -280,7 +280,7 @@ export default function SubjectPage() {
                 type="text"
                 value={editForm.goals}
                 onChange={(e) => setEditForm({ ...editForm, goals: e.target.value })}
-                style={{ width: '100%', padding: '0.625rem', border: '1px solid var(--border-color)', borderRadius: '0.5rem', fontSize: '0.875rem' }}
+                style={{ width: '100%', padding: '0.625rem', border: '1px solid var(--border-color)', borderRadius: '0.5rem', fontSize: '0.875rem', backgroundColor: 'var(--surface)', color: 'var(--text-slate-900)' }}
                 placeholder="e.g., Build a web app, Learn data structures"
               />
             </div>

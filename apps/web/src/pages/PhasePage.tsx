@@ -190,7 +190,7 @@ export default function PhasePage() {
                             onClick={() => generateContentMutation.mutate({ type: ct.type, topic })}
                             disabled={generateContentMutation.isPending}
                             style={{
-                              background: 'white', border: '1px solid var(--border-color)', color: isThisPending ? 'var(--primary)' : 'var(--text-slate-600)',
+                              background: 'var(--surface)', border: '1px solid var(--border-color)', color: isThisPending ? 'var(--primary)' : 'var(--text-slate-600)',
                               padding: '0.375rem 0.75rem', borderRadius: '0.5rem', cursor: generateContentMutation.isPending ? 'not-allowed' : 'pointer', fontSize: '0.75rem', fontWeight: 500,
                               display: 'flex', alignItems: 'center', gap: '0.25rem', transition: 'all 0.2s',
                               opacity: generateContentMutation.isPending && !isThisPending ? 0.6 : 1
@@ -213,10 +213,10 @@ export default function PhasePage() {
                           style={{
                             padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)',
                             display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer',
-                            backgroundColor: 'white', transition: 'all 0.2s'
+                            backgroundColor: 'var(--surface)', transition: 'all 0.2s'
                           }}
-                          onMouseOver={(e) => { e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.backgroundColor = 'var(--surface)'; }}
-                          onMouseOut={(e) => { e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.backgroundColor = 'white'; }}
+                          onMouseOver={(e) => { e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.backgroundColor = 'var(--background-light)'; }}
+                          onMouseOut={(e) => { e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.backgroundColor = 'var(--surface)'; }}
                         >
                           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                             <div style={{ color: STATUS_COLOR[content.status] }}>
@@ -295,13 +295,13 @@ export default function PhasePage() {
         <div className="card" style={{ padding: '1.25rem', marginBottom: '1.5rem', backgroundColor: 'var(--surface)', borderStyle: 'dashed' }}>
           <p style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-slate-700)', margin: '0 0 0.75rem 0' }}>Ask AI for specific content regarding this phase:</p>
           <div style={{ display: 'flex', gap: '0.75rem' }}>
-            <input 
+            <input
               className="input-field"
               value={customPrompt}
               onChange={(e) => setCustomPrompt(e.target.value)}
               placeholder="e.g. Explain this with a real-world example..."
               onKeyDown={(e) => e.key === 'Enter' && customPrompt.trim() && generateContentMutation.mutate({ type: 'CUSTOM' })}
-              style={{ flex: 1, backgroundColor: 'white' }}
+              style={{ flex: 1 }}
             />
             <button
               className="btn-primary"
@@ -327,7 +327,7 @@ export default function PhasePage() {
                 style={{
                   padding: '1rem 1.25rem', borderRadius: '0.75rem', border: '1px solid var(--border-color)',
                   display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer',
-                  backgroundColor: 'white',
+                  backgroundColor: 'var(--surface)',
                   borderLeft: content.status === 'COMPLETE' ? '4px solid #10b981' : content.status === 'GENERATING' ? '4px solid #f59e0b' : '1px solid var(--border-color)'
                 }}
               >
