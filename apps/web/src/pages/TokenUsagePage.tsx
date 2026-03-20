@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { tokenUsageApi } from '../api/token-usage.api';
 import { CreditCard, Coins, Zap, Users, ChevronLeft, ChevronRight, Clock, Bot } from 'lucide-react';
+import { useCurrency, CurrencySelector } from '../components/CurrencySelector';
 
 const AGENT_LABELS: Record<string, string> = {
   PATH_GENERATOR: 'Path Generator',
@@ -17,9 +18,17 @@ function formatNumber(num: number): string {
   return num.toString();
 }
 
+function formatCurrency(value: number, customRate: number): string {
+  const { currency } = useCurrency();
+  const rate = customRate > 0 ? customRate : 1;
+  const converted = value * rate;
+  return `${currency.symbol}${converted.toFixed(currency.code === 'USD' ? 4 : 2)}`;
+}
+
 export default function TokenUsagePage() {
   const [page, setPage] = useState(0);
   const [limit, setLimit] = useState(10);
+  const { customRate } = useCurrency();
 
   const { data: summary, isLoading: loadingSummary } = useQuery({
     queryKey: ['token-usage-summary'],
@@ -49,6 +58,7 @@ export default function TokenUsagePage() {
           <h2 style={{ fontSize: '1.875rem', fontWeight: 'bold', letterSpacing: '-0.025em', color: 'var(--text-slate-900)', margin: '0 0 0.5rem 0' }}>Token Consumption</h2>
           <p style={{ color: 'var(--text-slate-500)', fontWeight: 500, margin: 0 }}>Monitoring AI resource consumption and efficiency</p>
         </div>
+        <CurrencySelector />
       </div>
 
       {/* Metric Cards */}
@@ -59,7 +69,7 @@ export default function TokenUsagePage() {
           </div>
           <div>
             <p style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--text-slate-400)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 0.125rem 0' }}>Total Cost</p>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--text-slate-900)', margin: 0 }}>${s?.totalCostUsd?.toFixed(4) || '0.0000'}</h3>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--text-slate-900)', margin: 0 }}>{formatCurrency(s?.totalCostUsd || 0, customRate)}</h3>
           </div>
         </div>
 
@@ -79,7 +89,7 @@ export default function TokenUsagePage() {
           </div>
           <div>
             <p style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--text-slate-400)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 0.125rem 0' }}>Avg/User</p>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--text-slate-900)', margin: 0 }}>${s?.averageCostPerUser?.toFixed(4) || '0.0000'}</h3>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--text-slate-900)', margin: 0 }}>{formatCurrency(s?.averageCostPerUser || 0, customRate)}</h3>
           </div>
         </div>
 
@@ -117,7 +127,7 @@ export default function TokenUsagePage() {
                   </div>
                   <div style={{ marginLeft: 'auto' }}>
                     <span style={{ fontSize: '1.125rem', fontWeight: 'bold', color: 'var(--primary)' }}>
-                      ${stats.totalCostUsd?.toFixed(4) || '0.0000'}
+                      {formatCurrency(stats.totalCostUsd || 0, customRate)}
                     </span>
                   </div>
                 </div>
@@ -201,7 +211,7 @@ export default function TokenUsagePage() {
                     </div>
                   </td>
                   <td style={{ padding: '1rem 1.5rem' }}>
-                    <span style={{ color: 'var(--primary)', fontWeight: 600 }}>${r.estimatedCostUsd?.toFixed(5)}</span>
+                    <span style={{ color: 'var(--primary)', fontWeight: 600 }}>{formatCurrency(r.estimatedCostUsd || 0, customRate)}</span>
                   </td>
                   <td style={{ padding: '1rem 1.5rem', textAlign: 'right', color: 'var(--text-slate-400)' }}>
                     {new Date(r.createdAt).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}

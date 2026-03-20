@@ -183,11 +183,11 @@ export default function AdminUsersPage() {
           />
         </div>
 
-        <select 
-          value={roleFilter} 
+        <select
+          value={roleFilter}
           onChange={(e) => setRoleFilter(e.target.value)}
           className="select-input"
-          style={{ padding: '0.625rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', minWidth: '120px' }}
+          style={{ padding: '0.625rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', minWidth: '120px', backgroundColor: 'var(--surface)', color: 'var(--text-slate-900)' }}
         >
           <option value="">All Roles</option>
           <option value="USER">User</option>
@@ -242,22 +242,24 @@ export default function AdminUsersPage() {
             ) : users.map((u: User) => (
               <tr
                 key={u.id}
-                onClick={() => navigate(`/admin/users/${u.id}`)}
-                style={{ borderBottom: '1px solid var(--border-color)', opacity: u.deletedAt ? 0.6 : 1, cursor: 'pointer' }}
+                style={{ borderBottom: '1px solid var(--border-color)', opacity: u.deletedAt ? 0.6 : 1 }}
               >
                 <td style={{ padding: '1rem' }}>
-                  <input 
-                    type="checkbox" 
-                    checked={selectedIds.includes(u.id)} 
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.includes(u.id)}
                     onChange={() => handleSelectOne(u.id)}
                   />
                 </td>
-                <td style={{ padding: '1rem' }}>
+                <td
+                  onClick={() => navigate(`/admin/users/${u.id}`)}
+                  style={{ padding: '1rem', cursor: 'pointer' }}
+                >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <img 
-                      className="avatar-img" 
-                      src={`https://ui-avatars.com/api/?name=${u.displayName || u.email}&background=7c3aed&color=fff`} 
-                      alt="" 
+                    <img
+                      className="avatar-img"
+                      src={`https://ui-avatars.com/api/?name=${u.displayName || u.email}&background=7c3aed&color=fff`}
+                      alt=""
                       style={{ width: '2.5rem', height: '2.5rem' }}
                     />
                     <div>
@@ -306,7 +308,7 @@ export default function AdminUsersPage() {
                           setUserToAction(u);
                           setIsConfirmRestoreOpen(true);
                         }}
-                        style={{ padding: '0.5rem', borderRadius: '0.375rem', border: '1px solid var(--border-color)', background: 'white', cursor: 'pointer', color: 'var(--primary)' }}
+                        style={{ padding: '0.5rem', borderRadius: '0.375rem', border: '1px solid var(--border-color)', background: 'var(--surface)', cursor: 'pointer', color: 'var(--primary)' }}
                       >
                         <RotateCcw size={16} />
                       </button>
@@ -318,7 +320,7 @@ export default function AdminUsersPage() {
                             setUserToAction(u);
                             setIsConfirmResetOpen(true);
                           }}
-                          style={{ padding: '0.5rem', borderRadius: '0.375rem', border: '1px solid var(--border-color)', background: 'white', cursor: 'pointer' }}
+                          style={{ padding: '0.5rem', borderRadius: '0.375rem', border: '1px solid var(--border-color)', background: 'var(--surface)', cursor: 'pointer' }}
                         >
                           <RefreshCcw size={16} />
                         </button>
@@ -328,7 +330,7 @@ export default function AdminUsersPage() {
                             setUserToAction(u);
                             setIsConfirmDeleteOpen(true);
                           }}
-                          style={{ padding: '0.5rem', borderRadius: '0.375rem', border: '1px solid var(--border-color)', background: 'white', cursor: 'pointer', color: 'var(--danger)' }}
+                          style={{ padding: '0.5rem', borderRadius: '0.375rem', border: '1px solid var(--border-color)', background: 'var(--surface)', cursor: 'pointer', color: 'var(--danger)' }}
                         >
                           <Trash2 size={16} />
                         </button>
@@ -348,7 +350,7 @@ export default function AdminUsersPage() {
           <button 
             disabled={page === 1} 
             onClick={() => setPage(p => p - 1)}
-            style={{ padding: '0.5rem', borderRadius: '0.375rem', border: '1px solid var(--border-color)', background: 'white', cursor: page === 1 ? 'not-allowed' : 'pointer' }}
+            style={{ padding: '0.5rem', borderRadius: '0.375rem', border: '1px solid var(--border-color)', background: 'var(--surface)', cursor: page === 1 ? 'not-allowed' : 'pointer' }}
           >
             <ChevronLeft size={20} />
           </button>
@@ -358,7 +360,7 @@ export default function AdminUsersPage() {
           <button 
             disabled={page === meta.lastPage} 
             onClick={() => setPage(p => p + 1)}
-            style={{ padding: '0.5rem', borderRadius: '0.375rem', border: '1px solid var(--border-color)', background: 'white', cursor: page === meta.lastPage ? 'not-allowed' : 'pointer' }}
+            style={{ padding: '0.5rem', borderRadius: '0.375rem', border: '1px solid var(--border-color)', background: 'var(--surface)', cursor: page === meta.lastPage ? 'not-allowed' : 'pointer' }}
           >
             <ChevronRight size={20} />
           </button>
@@ -396,11 +398,11 @@ export default function AdminUsersPage() {
           </div>
           <div className="form-group">
             <label>Role</label>
-            <select 
+            <select
               value={createRole}
               onChange={(e) => setCreateRole(e.target.value)}
               className="select-input"
-              style={{ width: '100%', padding: '0.625rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)' }}
+              style={{ width: '100%', padding: '0.625rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--surface)', color: 'var(--text-slate-900)' }}
             >
               <option value="USER">User</option>
               <option value="ADMIN">Admin</option>

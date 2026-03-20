@@ -2,6 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { usersApi, UserWithTokenUsage } from '../api/users.api';
 import { ChevronLeft, CreditCard, Zap, FileText, DollarSign, Bot } from 'lucide-react';
+import { useCurrency, CurrencySelector } from '../components/CurrencySelector';
 
 const AGENT_LABELS: Record<string, string> = {
   PATH_GENERATOR: 'Path Generator',
@@ -21,9 +22,17 @@ function formatNumber(num: number): string {
   return num.toString();
 }
 
+function formatCurrency(value: number, customRate: number): string {
+  const { currency } = useCurrency();
+  const rate = customRate > 0 ? customRate : 1;
+  const converted = value * rate;
+  return `${currency.symbol}${converted.toFixed(currency.code === 'USD' ? 4 : 2)}`;
+}
+
 export default function AdminUserDetailPage() {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
+  const { customRate } = useCurrency();
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin-user', userId],
@@ -108,9 +117,12 @@ export default function AdminUserDetailPage() {
       </div>
 
       {/* Token Usage Summary */}
-      <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--text-slate-900)', marginBottom: '1rem' }}>
-        Token Usage
-      </h3>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+        <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--text-slate-900)', margin: 0 }}>
+          Token Usage
+        </h3>
+        <CurrencySelector />
+      </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
         <div className="card" style={{ padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -120,7 +132,7 @@ export default function AdminUserDetailPage() {
           <div>
             <p style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--text-slate-400)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 0.125rem 0' }}>Total Cost</p>
             <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--text-slate-900)', margin: 0 }}>
-              ${tokenUsage?.totalCostUsd?.toFixed(4) || '0.0000'}
+              {formatCurrency(tokenUsage?.totalCostUsd || 0, customRate)}
             </h3>
           </div>
         </div>
@@ -213,7 +225,7 @@ export default function AdminUserDetailPage() {
                 <div>
                   <p style={{ margin: 0, fontSize: '0.65rem', color: 'var(--text-slate-400)', textTransform: 'uppercase' }}>Cost</p>
                   <p style={{ margin: '0.125rem 0 0 0', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary)' }}>
-                    ${stats.totalCostUsd.toFixed(4)}
+                    {formatCurrency(stats.totalCostUsd, customRate)}
                   </p>
                 </div>
               </div>
