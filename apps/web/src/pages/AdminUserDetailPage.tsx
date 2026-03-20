@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { usersApi, UserWithTokenUsage } from '../api/users.api';
-import { ChevronLeft, CreditCard, Zap, FileText, DollarSign, Bot } from 'lucide-react';
+import { ChevronLeft, CreditCard, Zap, FileText, DollarSign, Bot, BookOpen } from 'lucide-react';
 import { useCurrency, CurrencySelector } from '../components/CurrencySelector';
 
 const AGENT_LABELS: Record<string, string> = {
@@ -105,13 +105,24 @@ export default function AdminUserDetailPage() {
             <p style={{ margin: '0.25rem 0 0 0', color: 'var(--text-slate-500)', fontSize: '0.875rem' }}>
               {user.email}
             </p>
-            <span className="badge" style={{
-              marginTop: '0.5rem',
-              backgroundColor: user.role === 'ADMIN' ? 'rgba(124, 58, 237, 0.1)' : 'var(--surface)',
-              color: user.role === 'ADMIN' ? 'var(--primary)' : 'var(--text-slate-500)',
-            }}>
-              {user.role}
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem' }}>
+              <span className="badge" style={{
+                backgroundColor: user.role === 'ADMIN' ? 'rgba(124, 58, 237, 0.1)' : 'var(--surface)',
+                color: user.role === 'ADMIN' ? 'var(--primary)' : 'var(--text-slate-500)',
+              }}>
+                {user.role}
+              </span>
+              <span style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.25rem',
+                fontSize: '0.75rem',
+                color: 'var(--text-slate-500)',
+              }}>
+                <BookOpen size={12} />
+                {user.subjectsCount} subjects
+              </span>
+            </div>
           </div>
         </div>
       </div>

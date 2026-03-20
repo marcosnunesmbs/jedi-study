@@ -4,12 +4,15 @@ import { Repository, Like, In } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import { randomBytes } from 'crypto';
 import { User, UserRole } from '../../database/entities/user.entity';
+import { Subject } from '../../database/entities/subject.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(Subject)
+    private readonly subjectRepository: Repository<Subject>,
   ) {}
 
   private generateRandomPassword(length = 12): string {
@@ -152,5 +155,9 @@ export class UsersService {
     await this.userRepository.update(userId, { passwordHash });
 
     return { success: true };
+  }
+
+  async getSubjectsCount(userId: string): Promise<number> {
+    return this.subjectRepository.count({ where: { userId } });
   }
 }

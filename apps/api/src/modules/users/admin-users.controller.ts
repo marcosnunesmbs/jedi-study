@@ -40,8 +40,10 @@ export class AdminUsersController {
       throw new NotFoundException('User not found');
     }
     const tokenUsage = await this.tokenUsageService.getUserWithTokenUsage(id);
+    const subjectsCount = await this.usersService.getSubjectsCount(id);
     return {
       ...user,
+      subjectsCount,
       tokenUsage,
     };
   }

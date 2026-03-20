@@ -24,6 +24,7 @@ export interface UserTokenUsage {
 }
 
 export interface UserWithTokenUsage extends User {
+  subjectsCount: number;
   tokenUsage: UserTokenUsage;
 }
 
