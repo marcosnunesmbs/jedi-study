@@ -4,6 +4,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { studyPathsApi } from '../api/study-paths.api';
 import { subjectsApi } from '../api/subjects.api';
 import { ChevronLeft, GraduationCap, Hourglass, RefreshCw, Map, Sparkles, ListChecks, Clock, Lock, ChevronRight, Loader2 } from 'lucide-react';
+import { WelcomeMessage } from '../components/WelcomeMessage';
 
 const STATUS_COLOR: Record<string, string> = {
   LOCKED: 'var(--text-slate-400)',
@@ -139,29 +140,7 @@ export default function SubjectPage() {
       {path?.phases && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           {path?.welcomeMessage && (
-            <div style={{ 
-              background: 'rgba(124, 58, 237, 0.05)', 
-              borderLeft: '4px solid var(--primary)', 
-              padding: '1.5rem', 
-              marginBottom: '2rem', 
-              borderRadius: '0 0.75rem 0.75rem 0',
-              display: 'flex',
-              gap: '1rem',
-              alignItems: 'flex-start'
-            }}>
-              <div style={{ color: 'var(--primary)', marginTop: '0.25rem' }}>
-                <Sparkles size={24} />
-              </div>
-              <p style={{ 
-                color: 'var(--text-slate-700)', 
-                fontSize: '1rem', 
-                lineHeight: '1.6', 
-                fontStyle: 'italic',
-                margin: 0
-              }}>
-                "{path.welcomeMessage}"
-              </p>
-            </div>
+            <WelcomeMessage message={path.welcomeMessage} />
           )}
           <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--text-slate-900)', margin: '0 0 0.5rem 0' }}>Learning Phases</h3>
           {(path.phases as any[]).map((phase: any) => (
