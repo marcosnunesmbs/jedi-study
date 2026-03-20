@@ -21,6 +21,7 @@ export class AuthService {
   }
 
   async login(email: string, password: string) {
+    // findByEmail will return null if user is soft-deleted by default
     const user = await this.users.findByEmail(email);
     if (!user) throw new UnauthorizedException('Invalid credentials');
 

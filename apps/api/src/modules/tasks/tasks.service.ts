@@ -80,39 +80,47 @@ export class TasksService {
       { status: 'SUBMITTED' },
     );
 
-    const job = await this.analysisQueue.add(
-      'analyze',
-      {
-        submissionId: submission.id,
-        userId: task.phase.studyPath.userId,
-        taskId: task.id,
-        phaseId: task.phaseId,
-        studyPathId: task.phase.studyPathId,
-        phaseOrder: task.phase.order,
-        taskTitle: task.title,
-        taskDescription: task.description,
-        taskType: task.type,
-        submissionContent: content,
-        projectContext: task.projectContext
-          ? JSON.parse(task.projectContext)
-          : undefined,
-      },
-      {
-        attempts: 3,
-        backoff: { type: 'exponential', delay: 1000 },
-        timeout: 90000,
-      },
-    );
+    try {
+      const job = await this.analysisQueue.add(
+        'analyze',
+        {
+          submissionId: submission.id,
+          userId: task.phase.studyPath.userId,
+          taskId: task.id,
+          phaseId: task.phaseId,
+          studyPathId: task.phase.studyPathId,
+          phaseOrder: task.phase.order,
+          taskTitle: task.title,
+          taskDescription: task.description,
+          taskType: task.type,
+          submissionContent: content,
+          projectContext: task.projectContext
+            ? JSON.parse(task.projectContext)
+            : undefined,
+        },
+        {
+          attempts: 3,
+          backoff: { type: 'exponential', delay: 1000 },
+          timeout: 90000,
+        },
+      );
 
-    const agentJob = this.agentJobRepository.create({
-      bullJobId: `task-analysis:${job.id}`,
-      type: task.type === 'PROJECT' ? 'PROJECT_ANALYZER' : 'TASK_ANALYZER',
-      status: 'QUEUED',
-      referenceId: submission.id,
-    });
-    await this.agentJobRepository.save(agentJob);
+      const agentJob = this.agentJobRepository.create({
+        bullJobId: `task-analysis:${job.id}`,
+        type: task.type === 'PROJECT' ? 'PROJECT_ANALYZER' : 'TASK_ANALYZER',
+        status: 'QUEUED',
+        referenceId: submission.id,
+      });
+      await this.agentJobRepository.save(agentJob);
 
-    return { submissionId: submission.id, jobId: String(job.id) };
+      return { submissionId: submission.id, jobId: String(job.id) };
+    } catch (error) {
+      await this.submissionRepository.update(
+        { id: submission.id },
+        { status: 'ERROR' },
+      );
+      throw error;
+    }
   }
 
   async getSubmissionStatus(submissionId: string, userId: string) {
@@ -125,12 +133,74 @@ export class TasksService {
       throw new NotFoundException('Submission not found');
     }
 
+    // Trigger recovery if stuck
+    if (submission.status === 'PENDING') {
+      await this.ensureAgentJob(submissionId);
+    }
+
     const job = await this.agentJobRepository.findOne({
       where: { referenceId: submissionId },
       order: { createdAt: 'DESC' },
     });
 
     return { id: submission.id, status: submission.status, score: submission.score, passed: submission.passed, job };
+  }
+
+  /**
+   * Recovers stuck task submissions
+   */
+  async ensureAgentJob(id: string) {
+    const submission = await this.submissionRepository.findOne({
+      where: { id },
+      relations: ['task', 'task.phase', 'task.phase.studyPath'],
+    });
+
+    if (!submission || submission.status !== 'PENDING') return;
+
+    const agentJob = await this.agentJobRepository.findOne({
+      where: { referenceId: id },
+    });
+
+    if (agentJob) return;
+
+    const task = submission.task;
+    
+    // Re-enqueue using submission and task data
+    try {
+      const job = await this.analysisQueue.add(
+        'analyze',
+        {
+          submissionId: submission.id,
+          userId: task.phase.studyPath.userId,
+          taskId: task.id,
+          phaseId: task.phaseId,
+          studyPathId: task.phase.studyPathId,
+          phaseOrder: task.phase.order,
+          taskTitle: task.title,
+          taskDescription: task.description,
+          taskType: task.type,
+          submissionContent: submission.content,
+          projectContext: task.projectContext
+            ? JSON.parse(task.projectContext)
+            : undefined,
+        },
+        {
+          attempts: 3,
+          backoff: { type: 'exponential', delay: 1000 },
+          timeout: 90000,
+        },
+      );
+
+      const newAgentJob = this.agentJobRepository.create({
+        bullJobId: `task-analysis:${job.id}`,
+        type: task.type === 'PROJECT' ? 'PROJECT_ANALYZER' : 'TASK_ANALYZER',
+        status: 'QUEUED',
+        referenceId: submission.id,
+      });
+      await this.agentJobRepository.save(newAgentJob);
+    } catch (error) {
+      await this.submissionRepository.update({ id }, { status: 'ERROR' });
+    }
   }
 
   async getAnalysis(submissionId: string, userId: string) {

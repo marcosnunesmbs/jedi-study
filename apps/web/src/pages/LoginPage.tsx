@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { authApi } from '../api/auth.api';
 import { useAuthStore } from '../store/auth.store';
-import { Zap, ArrowRight } from 'lucide-react';
+import { Zap, ArrowRight, Check } from 'lucide-react';
+import { isStrongPassword, getPasswordErrorMessage } from '../utils/password-validation';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -34,9 +35,11 @@ export default function LoginPage() {
     }
   };
 
+  const passwordError = mode === 'register' ? getPasswordErrorMessage(password) : null;
+
   const isSubmitDisabled =
     loading ||
-    (mode === 'register' && (!!passwordMatchError || confirmPassword !== password));
+    (mode === 'register' && (!!passwordMatchError || !!passwordError || confirmPassword !== password));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -135,8 +138,46 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
               required
-              minLength={6}
             />
+            {mode === 'register' && password && (
+              <div style={{ marginTop: '0.5rem' }}>
+                <div style={{ display: 'flex', gap: '4px', marginBottom: '0.5rem' }}>
+                  {[1, 2, 3, 4].map((level) => {
+                    const strength = [
+                      password.length >= 8,
+                      /[a-zA-Z]/.test(password),
+                      /[0-9]/.test(password),
+                      password.length >= 10
+                    ].filter(Boolean).length;
+                    
+                    let color = '#e2e8f0';
+                    if (level <= strength) {
+                      if (strength <= 1) color = '#ef4444';
+                      else if (strength <= 3) color = '#f59e0b';
+                      else color = '#22c55e';
+                    }
+
+                    return (
+                      <div key={level} style={{ flex: 1, height: '4px', borderRadius: '2px', backgroundColor: color }}></div>
+                    );
+                  })}
+                </div>
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <li style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', color: password.length >= 8 ? '#22c55e' : 'var(--text-slate-400)' }}>
+                    {password.length >= 8 ? <Check size={12} /> : <div style={{ width: 12 }} />}
+                    At least 8 characters
+                  </li>
+                  <li style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', color: /[a-zA-Z]/.test(password) ? '#22c55e' : 'var(--text-slate-400)' }}>
+                    {/[a-zA-Z]/.test(password) ? <Check size={12} /> : <div style={{ width: 12 }} />}
+                    Letters (A-Z)
+                  </li>
+                  <li style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', color: /[0-9]/.test(password) ? '#22c55e' : 'var(--text-slate-400)' }}>
+                    {/[0-9]/.test(password) ? <Check size={12} /> : <div style={{ width: 12 }} />}
+                    Numbers (0-9)
+                  </li>
+                </ul>
+              </div>
+            )}
           </div>
 
           {/* Confirm Password — register only */}

@@ -4,13 +4,14 @@ import { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { contentApi } from '../api/content.api';
-import { ChevronLeft, Clock, Sparkles } from 'lucide-react';
+import { ChevronLeft, Clock, Sparkles, RefreshCw, AlertCircle } from 'lucide-react';
 
 export default function ContentPage() {
   const { contentId } = useParams<{ contentId: string }>();
   const navigate = useNavigate();
   const [streamedContent, setStreamedContent] = useState<string | null>(null);
   const [selection, setSelection] = useState<{ text: string; x: number; y: number } | null>(null);
+  const [isRebuilding, setIsRebuilding] = useState(false);
 
   useEffect(() => {
     const handleMouseUp = (e: MouseEvent) => {
@@ -71,6 +72,20 @@ export default function ContentPage() {
   }, [content?.status, contentId, refetch]);
 
   const body = streamedContent || content?.body || '';
+
+  const handleRebuild = async () => {
+    if (!contentId) return;
+    setIsRebuilding(true);
+    try {
+      await contentApi.rebuild(contentId);
+      setStreamedContent(null);
+      refetch();
+    } catch (err) {
+      console.error('Failed to rebuild content:', err);
+    } finally {
+      setIsRebuilding(false);
+    }
+  };
 
   return (
     <div style={{ animation: 'fadeIn 0.5s ease-out' }}>
@@ -137,17 +152,31 @@ export default function ContentPage() {
           </h1>
           
           <p style={{ fontSize: '1.25rem', color: 'var(--text-slate-500)', fontStyle: 'italic', fontFamily: 'Georgia, serif', margin: 0 }}>
-            {content?.status === 'PENDING' ? 'Preparing the Holocron...' : content?.status === 'GENERATING' ? 'Channeling the Force to generate knowledge...' : ''}
+            {content?.status === 'PENDING' ? 'Preparing the Holocron...' : content?.status === 'GENERATING' ? 'Channeling the Force to generate knowledge...' : content?.status === 'ERROR' ? 'The archives are incomplete...' : ''}
           </p>
 
-          <div style={{ marginTop: '2rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <div style={{ width: '2.5rem', height: '2.5rem', borderRadius: '50%', backgroundColor: 'var(--surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
-               <Sparkles size={20} />
+          <div style={{ marginTop: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <div style={{ width: '2.5rem', height: '2.5rem', borderRadius: '50%', backgroundColor: 'var(--surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
+                <Sparkles size={20} />
+              </div>
+              <div>
+                <p style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-slate-900)', margin: 0 }}>Jedi Study AI</p>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-slate-500)', margin: 0 }}>Knowledge Synthesizer</p>
+              </div>
             </div>
-            <div>
-              <p style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-slate-900)', margin: 0 }}>Jedi Study AI</p>
-              <p style={{ fontSize: '0.75rem', color: 'var(--text-slate-500)', margin: 0 }}>Knowledge Synthesizer</p>
-            </div>
+
+            {(content?.status === 'ERROR' || (!body && content?.status !== 'PENDING' && content?.status !== 'COMPLETE')) && (
+              <button 
+                onClick={handleRebuild}
+                disabled={isRebuilding}
+                className="btn-primary"
+                style={{ padding: '0.5rem 1rem', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+              >
+                {isRebuilding ? <div style={{ width: '1rem', height: '1rem', borderRadius: '50%', border: '2px solid white', borderTopColor: 'transparent', animation: 'spin 1s linear infinite' }}></div> : <RefreshCw size={16} />}
+                {isRebuilding ? 'Regenerating...' : 'Regenerate Content'}
+              </button>
+            )}
           </div>
         </header>
 
@@ -165,6 +194,20 @@ export default function ContentPage() {
             >
               {body}
             </ReactMarkdown>
+          ) : content?.status === 'ERROR' ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '4rem 0', color: 'var(--text-slate-400)', textAlign: 'center' }}>
+               <AlertCircle size={48} style={{ color: '#ef4444', marginBottom: '1rem' }} />
+               <p style={{ color: 'var(--text-slate-900)', fontWeight: 600, margin: '0 0 0.5rem 0' }}>Generation Failed</p>
+               <p style={{ maxWidth: '300px', margin: '0 0 1.5rem 0' }}>An error occurred while channeling the archives. Please try regenerating.</p>
+               <button 
+                  onClick={handleRebuild}
+                  disabled={isRebuilding}
+                  style={{ background: 'none', border: '1px solid var(--border-color)', padding: '0.5rem 1rem', borderRadius: '0.5rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 500, color: 'var(--text-slate-600)' }}
+               >
+                 <RefreshCw size={16} />
+                 Try Again
+               </button>
+            </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '4rem 0', color: 'var(--text-slate-400)' }}>
                <div style={{ width: '3rem', height: '3rem', borderRadius: '50%', border: '3px solid var(--surface)', borderTopColor: 'var(--primary)', animation: 'spin 1s linear infinite', marginBottom: '1rem' }}></div>
@@ -182,3 +225,4 @@ export default function ContentPage() {
     </div>
   );
 }
+

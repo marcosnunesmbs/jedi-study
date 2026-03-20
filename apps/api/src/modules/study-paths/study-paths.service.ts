@@ -42,32 +42,40 @@ export class StudyPathsService {
     });
     await this.studyPathRepository.save(studyPath);
 
-    const job = await this.pathQueue.add(
-      'generate',
-      {
-        studyPathId: studyPath.id,
-        subjectId,
-        userId,
-        subjectTitle: subject.title,
-        skillLevel: subject.skillLevel,
-        goals: JSON.parse(subject.goals || '[]'),
-      },
-      {
-        attempts: 3,
-        backoff: { type: 'exponential', delay: 1000 },
-        timeout: 120000,
-      },
-    );
+    try {
+      const job = await this.pathQueue.add(
+        'generate',
+        {
+          studyPathId: studyPath.id,
+          subjectId,
+          userId,
+          subjectTitle: subject.title,
+          skillLevel: subject.skillLevel,
+          goals: JSON.parse(subject.goals || '[]'),
+        },
+        {
+          attempts: 3,
+          backoff: { type: 'exponential', delay: 1000 },
+          timeout: 120000,
+        },
+      );
 
-    const agentJob = this.agentJobRepository.create({
-      bullJobId: `path-generation:${job.id}`,
-      type: 'PATH_GENERATOR',
-      status: 'QUEUED',
-      referenceId: studyPath.id,
-    });
-    await this.agentJobRepository.save(agentJob);
+      const agentJob = this.agentJobRepository.create({
+        bullJobId: `path-generation:${job.id}`,
+        type: 'PATH_GENERATOR',
+        status: 'QUEUED',
+        referenceId: studyPath.id,
+      });
+      await this.agentJobRepository.save(agentJob);
 
-    return { studyPathId: studyPath.id, jobId: String(job.id) };
+      return { studyPathId: studyPath.id, jobId: String(job.id) };
+    } catch (error) {
+      await this.studyPathRepository.update(
+        { id: studyPath.id },
+        { status: 'ARCHIVED' },
+      );
+      throw error;
+    }
   }
 
   async findActive(subjectId: string, userId: string) {
@@ -114,11 +122,64 @@ export class StudyPathsService {
 
     if (!path) throw new NotFoundException('Study path not found');
 
+    // Trigger recovery if stuck
+    if (path.status === 'GENERATING') {
+      await this.ensureAgentJob(id);
+    }
+
     const job = await this.agentJobRepository.findOne({
       where: { referenceId: id, type: 'PATH_GENERATOR' },
       order: { createdAt: 'DESC' },
     });
 
     return { ...path, job };
+  }
+
+  /**
+   * Recovers stuck StudyPath generation
+   */
+  async ensureAgentJob(id: string) {
+    const path = await this.studyPathRepository.findOne({
+      where: { id },
+      relations: ['subject'],
+    });
+
+    if (!path || path.status !== 'GENERATING') return;
+
+    const agentJob = await this.agentJobRepository.findOne({
+      where: { referenceId: id, type: 'PATH_GENERATOR' },
+    });
+
+    if (agentJob) return;
+
+    // Re-enqueue using subject data
+    try {
+      const job = await this.pathQueue.add(
+        'generate',
+        {
+          studyPathId: path.id,
+          subjectId: path.subjectId,
+          userId: path.userId,
+          subjectTitle: path.subject.title,
+          skillLevel: path.subject.skillLevel,
+          goals: JSON.parse(path.subject.goals || '[]'),
+        },
+        {
+          attempts: 3,
+          backoff: { type: 'exponential', delay: 1000 },
+          timeout: 120000,
+        },
+      );
+
+      const newAgentJob = this.agentJobRepository.create({
+        bullJobId: `path-generation:${job.id}`,
+        type: 'PATH_GENERATOR',
+        status: 'QUEUED',
+        referenceId: path.id,
+      });
+      await this.agentJobRepository.save(newAgentJob);
+    } catch (error) {
+      await this.studyPathRepository.update({ id }, { status: 'ARCHIVED' });
+    }
   }
 }

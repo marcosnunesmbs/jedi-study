@@ -33,6 +33,9 @@ export class Content {
   @Column({ nullable: true })
   jobId: string;
 
+  @Column({ type: 'text', nullable: true })
+  input: string; // JSON string of generation params
+
   @CreateDateColumn()
   createdAt: Date;
 

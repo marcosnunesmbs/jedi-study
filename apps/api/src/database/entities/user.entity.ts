@@ -1,4 +1,4 @@
-import { Entity, PrimaryColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, BeforeInsert } from 'typeorm';
+import { Entity, PrimaryColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, BeforeInsert, DeleteDateColumn } from 'typeorm';
 import { randomUUID } from 'crypto';
 import { Subject } from './subject.entity';
 import { StudyPath } from './study-path.entity';
@@ -35,6 +35,9 @@ export class User {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @DeleteDateColumn()
+  deletedAt: Date;
 
   @OneToMany(() => Subject, (subject) => subject.user)
   subjects: Subject[];

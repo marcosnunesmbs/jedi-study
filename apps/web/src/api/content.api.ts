@@ -7,6 +7,8 @@ export const contentApi = {
 
   get: (id: string) => client.get(`/content/${id}`),
 
+  rebuild: (id: string) => client.post(`/content/${id}/rebuild`),
+
   streamUrl: (id: string) => {
     const baseUrl = import.meta.env.VITE_API_URL || '';
     const token = useAuthStore.getState().token;

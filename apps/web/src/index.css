@@ -5,6 +5,8 @@
   --background-dark: #0a0a0a;
   --surface: #f8f9fa;
   --border-color: #e5e7eb;
+  --danger: #ef4444;
+  --danger-hover: #dc2626;
   --text-slate-900: #0f172a;
   --text-slate-700: #334155;
   --text-slate-600: #475569;
@@ -20,6 +22,8 @@
   --background-light: #0f172a;
   --surface: #1e293b;
   --border-color: #334155;
+  --danger: #f87171;
+  --danger-hover: #ef4444;
   --text-slate-900: #f8fafc;
   --text-slate-700: #cbd5e1;
   --text-slate-600: #94a3b8;

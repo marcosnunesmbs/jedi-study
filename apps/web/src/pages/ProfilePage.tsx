@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useAuthStore } from '../store/auth.store';
 import { usersApi } from '../api/users.api';
-import { User, Lock, CheckCircle, AlertCircle, Save } from 'lucide-react';
+import { User, Lock, CheckCircle, AlertCircle, Save, Check } from 'lucide-react';
+import { isStrongPassword, getPasswordErrorMessage } from '../utils/password-validation';
 
 export default function ProfilePage() {
   const { user, updateUser } = useAuthStore();
@@ -47,8 +48,9 @@ export default function ProfilePage() {
       return;
     }
 
-    if (newPassword.length < 6) {
-      setPasswordError('New password must be at least 6 characters');
+    const error = getPasswordErrorMessage(newPassword);
+    if (error) {
+      setPasswordError(error);
       return;
     }
 
@@ -181,8 +183,46 @@ export default function ProfilePage() {
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   required
-                  minLength={6}
                 />
+                {newPassword && (
+                  <div style={{ marginTop: '0.5rem' }}>
+                    <div style={{ display: 'flex', gap: '4px', marginBottom: '0.5rem' }}>
+                      {[1, 2, 3, 4].map((level) => {
+                        const strength = [
+                          newPassword.length >= 8,
+                          /[a-zA-Z]/.test(newPassword),
+                          /[0-9]/.test(newPassword),
+                          newPassword.length >= 10
+                        ].filter(Boolean).length;
+                        
+                        let color = '#e2e8f0';
+                        if (level <= strength) {
+                          if (strength <= 1) color = '#ef4444';
+                          else if (strength <= 3) color = '#f59e0b';
+                          else color = '#22c55e';
+                        }
+
+                        return (
+                          <div key={level} style={{ flex: 1, height: '4px', borderRadius: '2px', backgroundColor: color }}></div>
+                        );
+                      })}
+                    </div>
+                    <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <li style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', color: newPassword.length >= 8 ? '#22c55e' : 'var(--text-slate-400)' }}>
+                        {newPassword.length >= 8 ? <Check size={12} /> : <div style={{ width: 12 }} />}
+                        At least 8 characters
+                      </li>
+                      <li style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', color: /[a-zA-Z]/.test(newPassword) ? '#22c55e' : 'var(--text-slate-400)' }}>
+                        {/[a-zA-Z]/.test(newPassword) ? <Check size={12} /> : <div style={{ width: 12 }} />}
+                        Letters (A-Z)
+                      </li>
+                      <li style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', color: /[0-9]/.test(newPassword) ? '#22c55e' : 'var(--text-slate-400)' }}>
+                        {/[0-9]/.test(newPassword) ? <Check size={12} /> : <div style={{ width: 12 }} />}
+                        Numbers (0-9)
+                      </li>
+                    </ul>
+                  </div>
+                )}
               </div>
               <div>
                 <label className="label" htmlFor="confirmPassword">Confirm New Password</label>

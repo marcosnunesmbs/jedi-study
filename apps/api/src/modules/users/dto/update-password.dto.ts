@@ -1,10 +1,11 @@
-import { IsString, MinLength } from 'class-validator';
+import { IsString } from 'class-validator';
+import { IsStrongPassword } from '../../../common/decorators/strong-password.decorator';
 
 export class UpdatePasswordDto {
   @IsString()
   oldPassword: string;
 
   @IsString()
-  @MinLength(6)
+  @IsStrongPassword()
   newPassword: string;
 }

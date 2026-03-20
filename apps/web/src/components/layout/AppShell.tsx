@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../../store/auth.store';
-import { Sparkles, LayoutDashboard, Coins, LogOut, Search, Bell, Plus, Menu, X, Sun, Moon, User } from 'lucide-react';
+import { Sparkles, LayoutDashboard, Coins, LogOut, Search, Bell, Plus, Menu, X, Sun, Moon, User, Users } from 'lucide-react';
 
 export default function AppShell() {
   const { user, logout } = useAuthStore();
@@ -73,10 +73,16 @@ export default function AppShell() {
             <span>Profile</span>
           </Link>
           {user?.role === 'ADMIN' && (
-            <Link to="/tokens" className={`nav-link ${isActive('/tokens') ? 'active' : ''}`} onClick={handleNavClick}>
-              <Coins size={20} />
-              <span>Token Usage</span>
-            </Link>
+            <>
+              <Link to="/tokens" className={`nav-link ${isActive('/tokens') ? 'active' : ''}`} onClick={handleNavClick}>
+                <Coins size={20} />
+                <span>Token Usage</span>
+              </Link>
+              <Link to="/admin/users" className={`nav-link ${isActive('/admin/users') ? 'active' : ''}`} onClick={handleNavClick}>
+                <Users size={20} />
+                <span>Users</span>
+              </Link>
+            </>
           )}
         </nav>
 

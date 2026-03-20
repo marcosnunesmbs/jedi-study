@@ -42,6 +42,11 @@ export class ContentController {
     return this.content.findOne(id, user.id);
   }
 
+  @Post('content/:id/rebuild')
+  rebuild(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.content.rebuild(id, user.id);
+  }
+
   // SSE endpoint — polls DB until content is COMPLETE
   @Get('content/:id/stream')
   async streamContent(@Param('id') id: string, @Res() res: Response, @CurrentUser() user: any) {
@@ -63,13 +68,33 @@ export class ContentController {
       return;
     }
 
+    // Trigger recovery if it was stuck
+    await this.content.ensureAgentJob(id);
+
     send('status', { status: 'connecting' });
+
+    const startTime = Date.now();
+    const TIMEOUT_MS = 120000; // 2 minutes timeout
 
     // Poll DB for completion
     const poll = setInterval(async () => {
       const content = await this.content.findById(id);
       if (!content) {
         send('error', { message: 'Content not found' });
+        clearInterval(poll);
+        res.end();
+        return;
+      }
+
+      // Check for timeout
+      if (Date.now() - startTime > TIMEOUT_MS) {
+        send('error', { message: 'Content generation timed out' });
+        
+        // If it was still pending/streaming, mark it as error in DB to avoid future zombies
+        if (content.status !== 'COMPLETE' && content.status !== 'ERROR') {
+          await this.content.updateStatus(id, 'ERROR');
+        }
+
         clearInterval(poll);
         res.end();
         return;
