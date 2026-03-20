@@ -79,22 +79,30 @@ export class TokenUsageService {
 
     const byAgent: Record<string, {
       calls: number;
+      inputTokens: number;
+      outputTokens: number;
       totalTokens: number;
       totalCostUsd: number;
     }> = {};
 
     const uniqueUsers = new Set();
+    let totalInputTokens = 0;
+    let totalOutputTokens = 0;
     let totalTokens = 0;
     let totalCostUsd = 0;
 
     for (const r of all) {
       uniqueUsers.add(r.userId);
       if (!byAgent[r.agentType]) {
-        byAgent[r.agentType] = { calls: 0, totalTokens: 0, totalCostUsd: 0 };
+        byAgent[r.agentType] = { calls: 0, inputTokens: 0, outputTokens: 0, totalTokens: 0, totalCostUsd: 0 };
       }
       byAgent[r.agentType].calls++;
+      byAgent[r.agentType].inputTokens += r.inputTokens;
+      byAgent[r.agentType].outputTokens += r.outputTokens;
       byAgent[r.agentType].totalTokens += r.totalTokens;
       byAgent[r.agentType].totalCostUsd += r.estimatedCostUsd;
+      totalInputTokens += r.inputTokens;
+      totalOutputTokens += r.outputTokens;
       totalTokens += r.totalTokens;
       totalCostUsd += r.estimatedCostUsd;
     }
@@ -104,10 +112,51 @@ export class TokenUsageService {
 
     return {
       totalCalls: all.length,
+      totalInputTokens,
+      totalOutputTokens,
       totalTokens,
       totalCostUsd: Math.round(totalCostUsd * 1000000) / 1000000,
       totalUsers,
       averageCostPerUser: Math.round(averageCostPerUser * 1000000) / 1000000,
+      byAgent,
+    };
+  }
+
+  async getUserWithTokenUsage(userId: string) {
+    const records = await this.tokenUsageRepository.find({ where: { userId } });
+
+    const byAgent: Record<string, {
+      calls: number;
+      inputTokens: number;
+      outputTokens: number;
+      totalCostUsd: number;
+    }> = {};
+
+    let totalInputTokens = 0;
+    let totalOutputTokens = 0;
+    let totalCalls = 0;
+    let totalCostUsd = 0;
+
+    for (const r of records) {
+      totalCalls++;
+      totalInputTokens += r.inputTokens;
+      totalOutputTokens += r.outputTokens;
+      totalCostUsd += r.estimatedCostUsd;
+
+      if (!byAgent[r.agentType]) {
+        byAgent[r.agentType] = { calls: 0, inputTokens: 0, outputTokens: 0, totalCostUsd: 0 };
+      }
+      byAgent[r.agentType].calls++;
+      byAgent[r.agentType].inputTokens += r.inputTokens;
+      byAgent[r.agentType].outputTokens += r.outputTokens;
+      byAgent[r.agentType].totalCostUsd += r.estimatedCostUsd;
+    }
+
+    return {
+      totalInputTokens,
+      totalOutputTokens,
+      totalCalls,
+      totalCostUsd: Math.round(totalCostUsd * 1000000) / 1000000,
       byAgent,
     };
   }

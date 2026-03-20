@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { usersApi, User } from '../api/users.api';
 import Modal from '../components/layout/Modal';
@@ -23,6 +24,7 @@ import { isStrongPassword, getPasswordErrorMessage } from '../utils/password-val
 
 export default function AdminUsersPage() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
@@ -238,7 +240,11 @@ export default function AdminUsersPage() {
             ) : users.length === 0 ? (
               <tr><td colSpan={6} style={{ padding: '3rem', textAlign: 'center' }}>No users found.</td></tr>
             ) : users.map((u: User) => (
-              <tr key={u.id} style={{ borderBottom: '1px solid var(--border-color)', opacity: u.deletedAt ? 0.6 : 1 }}>
+              <tr
+                key={u.id}
+                onClick={() => navigate(`/admin/users/${u.id}`)}
+                style={{ borderBottom: '1px solid var(--border-color)', opacity: u.deletedAt ? 0.6 : 1, cursor: 'pointer' }}
+              >
                 <td style={{ padding: '1rem' }}>
                   <input 
                     type="checkbox" 

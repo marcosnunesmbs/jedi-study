@@ -9,6 +9,7 @@ import ContentPage from './pages/ContentPage';
 import TokenUsagePage from './pages/TokenUsagePage';
 import ProfilePage from './pages/ProfilePage';
 import AdminUsersPage from './pages/AdminUsersPage';
+import AdminUserDetailPage from './pages/AdminUserDetailPage';
 import AppShell from './components/layout/AppShell';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
@@ -54,6 +55,14 @@ export default function App() {
           element={
             <AdminRoute>
               <AdminUsersPage />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="admin/users/:userId"
+          element={
+            <AdminRoute>
+              <AdminUserDetailPage />
             </AdminRoute>
           }
         />

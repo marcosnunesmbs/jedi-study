@@ -1,7 +1,21 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { tokenUsageApi } from '../api/token-usage.api';
-import { CreditCard, Coins, Zap, Users, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
+import { CreditCard, Coins, Zap, Users, ChevronLeft, ChevronRight, Clock, Bot } from 'lucide-react';
+
+const AGENT_LABELS: Record<string, string> = {
+  PATH_GENERATOR: 'Path Generator',
+  CONTENT_GEN: 'Content Gen',
+  TASK_ANALYZER: 'Task Analyzer',
+  PROJECT_ANALYZER: 'Project Analyzer',
+  SAFETY: 'Safety',
+};
+
+function formatNumber(num: number): string {
+  if (num >= 1000000) return (num / 1000000).toFixed(2) + 'M';
+  if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+  return num.toString();
+}
 
 export default function TokenUsagePage() {
   const [page, setPage] = useState(0);
@@ -79,6 +93,59 @@ export default function TokenUsagePage() {
           </div>
         </div>
       </section>
+
+      {/* Usage by Agent */}
+      {s?.byAgent && Object.keys(s.byAgent).length > 0 && (
+        <section style={{ marginBottom: '2.5rem' }}>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--text-slate-900)', marginBottom: '1rem' }}>
+            Usage by Agent
+          </h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
+            {Object.entries(s.byAgent).map(([agentType, stats]: [string, any]) => (
+              <div key={agentType} className="card" style={{ padding: '1.25rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+                  <div style={{ padding: '0.5rem', backgroundColor: 'var(--surface)', color: 'var(--primary)', borderRadius: '0.5rem' }}>
+                    <Bot size={20} />
+                  </div>
+                  <div>
+                    <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: 'var(--text-slate-900)' }}>
+                      {AGENT_LABELS[agentType] || agentType}
+                    </h4>
+                    <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.75rem', color: 'var(--text-slate-500)' }}>
+                      {stats.calls} calls
+                    </p>
+                  </div>
+                  <div style={{ marginLeft: 'auto' }}>
+                    <span style={{ fontSize: '1.125rem', fontWeight: 'bold', color: 'var(--primary)' }}>
+                      ${stats.totalCostUsd?.toFixed(4) || '0.0000'}
+                    </span>
+                  </div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem', textAlign: 'center' }}>
+                  <div style={{ padding: '0.5rem', backgroundColor: 'var(--surface)', borderRadius: '0.375rem' }}>
+                    <p style={{ margin: 0, fontSize: '0.6rem', color: 'var(--text-slate-400)', textTransform: 'uppercase' }}>Input</p>
+                    <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-slate-900)' }}>
+                      {formatNumber(stats.inputTokens || 0)}
+                    </p>
+                  </div>
+                  <div style={{ padding: '0.5rem', backgroundColor: 'var(--surface)', borderRadius: '0.375rem' }}>
+                    <p style={{ margin: 0, fontSize: '0.6rem', color: 'var(--text-slate-400)', textTransform: 'uppercase' }}>Output</p>
+                    <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-slate-900)' }}>
+                      {formatNumber(stats.outputTokens || 0)}
+                    </p>
+                  </div>
+                  <div style={{ padding: '0.5rem', backgroundColor: 'var(--surface)', borderRadius: '0.375rem' }}>
+                    <p style={{ margin: 0, fontSize: '0.6rem', color: 'var(--text-slate-400)', textTransform: 'uppercase' }}>Total</p>
+                    <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-slate-900)' }}>
+                      {formatNumber(stats.totalTokens || 0)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Recent Activity Table */}
       <section className="card" style={{ overflow: 'hidden' }}>

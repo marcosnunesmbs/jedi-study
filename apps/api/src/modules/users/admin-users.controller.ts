@@ -1,16 +1,20 @@
-import { Controller, UseGuards, Get, Query, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, UseGuards, Get, Query, Post, Body, Patch, Param, Delete, NotFoundException } from '@nestjs/common';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { UserRole } from '../../database/entities/user.entity';
 import { UsersService } from './users.service';
+import { TokenUsageService } from '../token-usage/token-usage.service';
 import { CreateUserDto } from './dto/create-user.dto';
 
 @Controller('admin/users')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
 export class AdminUsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly tokenUsageService: TokenUsageService,
+  ) {}
 
   @Get()
   async findAll(
@@ -27,6 +31,19 @@ export class AdminUsersController {
       role,
       withDeleted: withDeleted === 'true',
     });
+  }
+
+  @Get(':id')
+  async findOne(@Param('id') id: string) {
+    const user = await this.usersService.findById(id);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    const tokenUsage = await this.tokenUsageService.getUserWithTokenUsage(id);
+    return {
+      ...user,
+      tokenUsage,
+    };
   }
 
   @Post()

@@ -10,6 +10,23 @@ export interface User {
   deletedAt?: string;
 }
 
+export interface UserTokenUsage {
+  totalInputTokens: number;
+  totalOutputTokens: number;
+  totalCalls: number;
+  totalCostUsd: number;
+  byAgent: Record<string, {
+    calls: number;
+    inputTokens: number;
+    outputTokens: number;
+    totalCostUsd: number;
+  }>;
+}
+
+export interface UserWithTokenUsage extends User {
+  tokenUsage: UserTokenUsage;
+}
+
 export interface UserListResponse {
   data: User[];
   meta: {
@@ -30,6 +47,9 @@ export const usersApi = {
   admin: {
     list: (params: { page?: number; limit?: number; search?: string; role?: string; withDeleted?: boolean }) =>
       client.get<UserListResponse>('/admin/users', { params }),
+
+    getUser: (id: string) =>
+      client.get<UserWithTokenUsage>(`/admin/users/${id}`),
 
     create: (data: { email: string; displayName?: string; role?: string }) =>
       client.post<{ user: User; password: string }>('/admin/users', data),
