@@ -10,4 +10,5 @@ dependencies = [
     "pydantic>=2.7.0",
     "pydantic-settings>=2.3.0",
     "google-genai>=1.0.0",
+    "pytest>=8.0.0",
 ]

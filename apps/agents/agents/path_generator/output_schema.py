@@ -29,6 +29,7 @@ class PathPhase(BaseModel):
 
 class StudyPathOutput(BaseModel):
     subject: str
+    welcomeMessage: str = Field(..., description="A motivating and instructive greeting for the user")
     skillLevel: str = Field(..., pattern="^(BEGINNER|INTERMEDIATE|ADVANCED)$")
     estimatedHours: int = Field(..., ge=1)
     totalPhases: int = Field(..., ge=1)

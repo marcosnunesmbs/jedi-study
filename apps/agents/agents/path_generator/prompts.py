@@ -12,6 +12,7 @@ For each plan you generate, you must:
 4. For PROJECT type tasks, include specific deliverables and evaluation criteria
 5. Be realistic about time estimates
 6. Consider the learner's existing background
+7. Generate a `welcomeMessage`: A motivating and instructive greeting for the user. This message must be in the student's language and set the tone for the entire study path.
 
 Task types:
 - READING: Conceptual learning, documentation study
@@ -23,6 +24,7 @@ CRITICAL: You must respond ONLY with a single JSON object (not an array) matchin
 
 {
   "subject": "string",
+  "welcomeMessage": "string (motivating greeting in the student's language)",
   "skillLevel": "BEGINNER" | "INTERMEDIATE" | "ADVANCED",
   "estimatedHours": number,
   "totalPhases": number,
@@ -77,7 +79,7 @@ Current level: {skill_level}
 Learning goals:
 {goals_text}{context_section}
 
-Generate a structured study path with progressive phases, practical tasks, and realistic time estimates.
+Generate a structured study path with a personalized welcome message, progressive phases, practical tasks, and realistic time estimates.
 Respond with valid JSON only, no markdown, no explanation.
 
 IMPORTANT: CREATE ALL CONTENT ON ORIGINAL STUDENT LANGUAGE. 
