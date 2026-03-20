@@ -44,6 +44,9 @@ export class StudyPath {
   @Column({ default: 0 })
   totalPhases: number;
 
+  @Column({ type: 'text', nullable: true })
+  welcomeMessage: string | null;
+
   @CreateDateColumn()
   createdAt: Date;
 

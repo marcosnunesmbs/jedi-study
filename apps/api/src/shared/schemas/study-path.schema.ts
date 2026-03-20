@@ -30,6 +30,7 @@ export const PathPhaseSchema = z.object({
 
 export const StudyPathOutputSchema = z.object({
   subject: z.string().min(1),
+  welcomeMessage: z.string().optional().default(''),
   skillLevel: SkillLevelSchema,
   estimatedHours: z.number().int().min(1),
   totalPhases: z.number().int().min(1),
