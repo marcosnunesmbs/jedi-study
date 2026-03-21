@@ -6,6 +6,11 @@ import remarkGfm from 'remark-gfm';
 import { contentApi } from '../api/content.api';
 import { ChevronLeft, Clock, Sparkles, RefreshCw, AlertCircle } from 'lucide-react';
 
+function cleanTitle(title: string | undefined): string {
+  if (!title) return 'Loading content...';
+  return title.replace(/^(EXPLANATION|EXAMPLE|EXERCISE|INTRODUCTION|SUMMARY)\s*[-—]\s*/i, '');
+}
+
 export default function ContentPage() {
   const { contentId } = useParams<{ contentId: string }>();
   const navigate = useNavigate();
@@ -132,7 +137,7 @@ export default function ContentPage() {
         )}
 
         <header style={{ marginBottom: '3rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+          <div className="content-header-meta" style={{ marginBottom: '1.5rem' }}>
             <span style={{ backgroundColor: 'rgba(124, 58, 237, 0.1)', color: 'var(--primary)', fontSize: '0.75rem', fontWeight: 'bold', padding: '0.25rem 0.75rem', borderRadius: '9999px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               {content?.type || 'Material'}
             </span>
@@ -148,7 +153,7 @@ export default function ContentPage() {
           </div>
           
           <h1 style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--text-slate-900)', lineHeight: 1.2, margin: '0 0 1rem 0' }}>
-            {content?.title || 'Loading content...'}
+            {cleanTitle(content?.title)}
           </h1>
           
           <p style={{ fontSize: '1.25rem', color: 'var(--text-slate-500)', fontStyle: 'italic', fontFamily: 'Georgia, serif', margin: 0 }}>

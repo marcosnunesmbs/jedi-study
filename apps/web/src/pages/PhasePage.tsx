@@ -294,14 +294,13 @@ export default function PhasePage() {
 
         <div className="card" style={{ padding: '1.25rem', marginBottom: '1.5rem', backgroundColor: 'var(--surface)', borderStyle: 'dashed' }}>
           <p style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-slate-700)', margin: '0 0 0.75rem 0' }}>Ask AI for specific content regarding this phase:</p>
-          <div style={{ display: 'flex', gap: '0.75rem' }}>
+          <div className="input-button-group">
             <input
               className="input-field"
               value={customPrompt}
               onChange={(e) => setCustomPrompt(e.target.value)}
               placeholder="e.g. Explain this with a real-world example..."
               onKeyDown={(e) => e.key === 'Enter' && customPrompt.trim() && generateContentMutation.mutate({ type: 'CUSTOM' })}
-              style={{ flex: 1 }}
             />
             <button
               className="btn-primary"

@@ -1,33 +1,10 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { usersApi, UserWithTokenUsage } from '../api/users.api';
-import { ChevronLeft, CreditCard, Zap, FileText, DollarSign, Bot, BookOpen } from 'lucide-react';
+import { AgentUsageCard } from '../components/AgentUsageCard';
+import { ChevronLeft, CreditCard, Zap, FileText, DollarSign, BookOpen } from 'lucide-react';
 import { useCurrency, CurrencySelector } from '../components/CurrencySelector';
-
-const AGENT_LABELS: Record<string, string> = {
-  PATH_GENERATOR: 'Path Generator',
-  CONTENT_GEN: 'Content Gen',
-  TASK_ANALYZER: 'Task Analyzer',
-  PROJECT_ANALYZER: 'Project Analyzer',
-  SAFETY: 'Safety',
-};
-
-function formatNumber(num: number): string {
-  if (num >= 1000000) {
-    return (num / 1000000).toFixed(2) + 'M';
-  }
-  if (num >= 1000) {
-    return (num / 1000).toFixed(1) + 'K';
-  }
-  return num.toString();
-}
-
-function formatCurrency(value: number, customRate: number): string {
-  const { currency } = useCurrency();
-  const rate = customRate > 0 ? customRate : 1;
-  const converted = value * rate;
-  return `${currency.symbol}${converted.toFixed(currency.code === 'USD' ? 4 : 2)}`;
-}
+import { formatNumber, formatCurrency } from '../utils/format';
 
 export default function AdminUserDetailPage() {
   const { userId } = useParams<{ userId: string }>();
@@ -185,62 +162,15 @@ export default function AdminUserDetailPage() {
         </div>
       </div>
 
-      {/* Breakdown by Agent */}
+      {/* Usage by Agent */}
       <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--text-slate-900)', marginBottom: '1rem' }}>
         Usage by Agent
       </h3>
 
       {tokenUsage?.byAgent && Object.keys(tokenUsage.byAgent).length > 0 ? (
-        <div style={{ display: 'grid', gap: '0.75rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
           {Object.entries(tokenUsage.byAgent).map(([agentType, stats]) => (
-            <div
-              key={agentType}
-              className="card"
-              style={{ padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <div style={{
-                  width: '2.5rem',
-                  height: '2.5rem',
-                  borderRadius: '0.5rem',
-                  backgroundColor: 'var(--surface)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'var(--primary)',
-                }}>
-                  <Bot size={20} />
-                </div>
-                <div>
-                  <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: 'var(--text-slate-900)' }}>
-                    {AGENT_LABELS[agentType] || agentType}
-                  </h4>
-                  <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.75rem', color: 'var(--text-slate-500)' }}>
-                    {stats.calls} calls
-                  </p>
-                </div>
-              </div>
-              <div className="agent-stats" style={{ display: 'flex', gap: '1.5rem', textAlign: 'right', flexWrap: 'wrap', justifyContent: 'flex-end', minWidth: '200px' }}>
-                <div style={{ minWidth: '60px' }}>
-                  <p style={{ margin: 0, fontSize: '0.65rem', color: 'var(--text-slate-400)', textTransform: 'uppercase' }}>Input</p>
-                  <p style={{ margin: '0.125rem 0 0 0', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-slate-900)' }}>
-                    {formatNumber(stats.inputTokens)}
-                  </p>
-                </div>
-                <div style={{ minWidth: '60px' }}>
-                  <p style={{ margin: 0, fontSize: '0.65rem', color: 'var(--text-slate-400)', textTransform: 'uppercase' }}>Output</p>
-                  <p style={{ margin: '0.125rem 0 0 0', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-slate-900)' }}>
-                    {formatNumber(stats.outputTokens)}
-                  </p>
-                </div>
-                <div style={{ minWidth: '60px' }}>
-                  <p style={{ margin: 0, fontSize: '0.65rem', color: 'var(--text-slate-400)', textTransform: 'uppercase' }}>Cost</p>
-                  <p style={{ margin: '0.125rem 0 0 0', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary)' }}>
-                    {formatCurrency(stats.totalCostUsd, customRate)}
-                  </p>
-                </div>
-              </div>
-            </div>
+            <AgentUsageCard key={agentType} agentType={agentType} stats={stats} />
           ))}
         </div>
       ) : (

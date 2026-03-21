@@ -414,3 +414,48 @@ body {
     margin-top: 0.5rem !important;
   }
 }
+
+/* Phase page - Ask to AI input/button responsive */
+.input-button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.input-button-group input {
+  width: 100%;
+}
+
+.input-button-group button {
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .input-button-group {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .input-button-group input {
+    flex: 1;
+  }
+
+  .input-button-group button {
+    width: auto;
+  }
+}
+
+/* Content page - header meta tags responsive */
+.content-header-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+
+@media (min-width: 640px) {
+  .content-header-meta {
+    flex-direction: row;
+    align-items: center;
+  }
+}
