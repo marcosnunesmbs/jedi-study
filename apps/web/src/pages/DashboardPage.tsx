@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { subjectsApi } from '../api/subjects.api';
 import { studyPathsApi } from '../api/study-paths.api';
+import Modal from '../components/layout/Modal';
+import Button from '../components/layout/Button';
 import { X, Plus, ArrowRight, Code, Palette, Database, Network, GraduationCap, Loader2 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -84,58 +86,51 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {showForm && (
-        <div className="card" style={{ padding: '2rem', marginBottom: '2.5rem', animation: 'slideDown 0.3s ease-out' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-            <h3 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 600 }}>New Subject</h3>
-            <button 
-              onClick={() => setShowForm(false)} 
-              style={{ background: 'none', border: 'none', color: 'var(--text-slate-400)', cursor: 'pointer' }}
-            >
-              <X size={20} />
-            </button>
+      <Modal
+        isOpen={showForm}
+        onClose={() => { setShowForm(false); setNewSubject({ title: '', skillLevel: 'BEGINNER', goals: '' }); }}
+        title="Create New Subject"
+        maxWidth="500px"
+      >
+        <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <div>
+            <label className="label">Subject Title</label>
+            <input
+              className="input-field"
+              placeholder="e.g. Software Architecture, React Masterclass"
+              value={newSubject.title}
+              onChange={(e) => setNewSubject({ ...newSubject, title: e.target.value })}
+              required
+            />
           </div>
-          <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <div>
-              <label className="label">Subject Title</label>
-              <input
-                className="input-field"
-                placeholder="e.g. Software Architecture, React Masterclass"
-                value={newSubject.title}
-                onChange={(e) => setNewSubject({ ...newSubject, title: e.target.value })}
-                required
-              />
-            </div>
-            <div>
-              <label className="label">Skill Level</label>
-              <select
-                className="input-field"
-                value={newSubject.skillLevel}
-                onChange={(e) => setNewSubject({ ...newSubject, skillLevel: e.target.value })}
-              >
-                <option value="BEGINNER">Beginner</option>
-                <option value="INTERMEDIATE">Intermediate</option>
-                <option value="ADVANCED">Advanced</option>
-              </select>
-            </div>
-            <div>
-              <label className="label">Learning Goals (one per line)</label>
-              <textarea
-                className="input-field"
-                placeholder="Master microservices design&#10;Understand event-driven architecture"
-                value={newSubject.goals}
-                onChange={(e) => setNewSubject({ ...newSubject, goals: e.target.value })}
-                rows={3}
-                style={{ resize: 'vertical' }}
-              />
-            </div>
-            <button className="btn-primary" type="submit" disabled={createMutation.isPending} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
-              {createMutation.isPending ? <Loader2 size={18} className="animate-spin" /> : null}
-              {createMutation.isPending ? 'Creating...' : 'Create & Generate Path'}
-            </button>
-          </form>
-        </div>
-      )}
+          <div>
+            <label className="label">Skill Level</label>
+            <select
+              className="input-field"
+              value={newSubject.skillLevel}
+              onChange={(e) => setNewSubject({ ...newSubject, skillLevel: e.target.value })}
+            >
+              <option value="BEGINNER">Beginner</option>
+              <option value="INTERMEDIATE">Intermediate</option>
+              <option value="ADVANCED">Advanced</option>
+            </select>
+          </div>
+          <div>
+            <label className="label">Learning Goals (one per line)</label>
+            <textarea
+              className="input-field"
+              placeholder="Master microservices design&#10;Understand event-driven architecture"
+              value={newSubject.goals}
+              onChange={(e) => setNewSubject({ ...newSubject, goals: e.target.value })}
+              rows={3}
+              style={{ resize: 'vertical' }}
+            />
+          </div>
+          <Button type="submit" isLoading={createMutation.isPending} style={{ width: '100%' }}>
+            {createMutation.isPending ? 'Creating...' : 'Create & Generate Path'}
+          </Button>
+        </form>
+      </Modal>
 
       {isLoading ? (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
