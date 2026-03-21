@@ -4,15 +4,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { usersApi, User } from '../api/users.api';
 import Modal from '../components/layout/Modal';
 import Button from '../components/layout/Button';
-import { 
-  Search, 
-  UserPlus, 
-  Trash2, 
-  RefreshCcw, 
-  Shield, 
+import { DataTable, Column } from '../components/DataTable';
+import {
+  Search,
+  UserPlus,
+  Trash2,
+  RefreshCcw,
+  Shield,
   User as UserIcon,
-  ChevronLeft,
-  ChevronRight,
   X,
   Copy,
   Check,
@@ -26,6 +25,7 @@ export default function AdminUsersPage() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
   const [showDeleted, setShowDeleted] = useState(false);
@@ -49,12 +49,13 @@ export default function AdminUsersPage() {
   const [createRole, setCreateRole] = useState('USER');
 
   const { data: queryData, isLoading } = useQuery({
-    queryKey: ['admin-users', page, search, roleFilter, showDeleted],
-    queryFn: () => usersApi.admin.list({ 
-      page, 
-      search, 
-      role: roleFilter, 
-      withDeleted: showDeleted 
+    queryKey: ['admin-users', page, limit, search, roleFilter, showDeleted],
+    queryFn: () => usersApi.admin.list({
+      page,
+      limit,
+      search,
+      role: roleFilter,
+      withDeleted: showDeleted
     }),
   });
 
@@ -143,7 +144,7 @@ export default function AdminUsersPage() {
 
   return (
     <div className="admin-page">
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
           <h1 style={{ fontSize: '1.875rem', fontWeight: 700, margin: 0 }}>User Management</h1>
           <p style={{ color: 'var(--text-slate-500)', marginTop: '0.25rem' }}>Manage all users, roles and account access.</p>
@@ -216,156 +217,143 @@ export default function AdminUsersPage() {
       </div>
 
       {/* Table */}
-      <div className="table-container">
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
-          <thead>
-            <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--border-color)' }}>
-              <th style={{ padding: '1rem' }}>
-                <input 
-                  type="checkbox" 
-                  onChange={handleSelectAll}
-                  checked={users.length > 0 && selectedIds.length === users.length}
-                />
-              </th>
-              <th style={{ padding: '1rem', fontWeight: 600, color: 'var(--text-slate-500)' }}>User</th>
-              <th style={{ padding: '1rem', fontWeight: 600, color: 'var(--text-slate-500)' }}>Role</th>
-              <th style={{ padding: '1rem', fontWeight: 600, color: 'var(--text-slate-500)' }}>Status</th>
-              <th style={{ padding: '1rem', fontWeight: 600, color: 'var(--text-slate-500)' }}>Created At</th>
-              <th style={{ padding: '1rem', fontWeight: 600, color: 'var(--text-slate-500)', textAlign: 'right' }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading ? (
-              <tr><td colSpan={6} style={{ padding: '3rem', textAlign: 'center' }}>Loading users...</td></tr>
-            ) : users.length === 0 ? (
-              <tr><td colSpan={6} style={{ padding: '3rem', textAlign: 'center' }}>No users found.</td></tr>
-            ) : users.map((u: User) => (
-              <tr
-                key={u.id}
-                style={{ borderBottom: '1px solid var(--border-color)', opacity: u.deletedAt ? 0.6 : 1 }}
+      <DataTable
+        columns={[
+          {
+            key: 'select',
+            header: '',
+            minWidth: '40px',
+            render: (u: User) => (
+              <input
+                type="checkbox"
+                checked={selectedIds.includes(u.id)}
+                onChange={() => handleSelectOne(u.id)}
+              />
+            )
+          },
+          {
+            key: 'user',
+            header: 'User',
+            minWidth: '200px',
+            render: (u: User) => (
+              <div 
+                onClick={() => navigate(`/admin/users/${u.id}`)}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}
               >
-                <td style={{ padding: '1rem' }}>
-                  <input
-                    type="checkbox"
-                    checked={selectedIds.includes(u.id)}
-                    onChange={() => handleSelectOne(u.id)}
-                  />
-                </td>
-                <td
-                  onClick={() => navigate(`/admin/users/${u.id}`)}
-                  style={{ padding: '1rem', cursor: 'pointer' }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <img
-                      className="avatar-img"
-                      src={`https://ui-avatars.com/api/?name=${u.displayName || u.email}&background=7c3aed&color=fff`}
-                      alt=""
-                      style={{ width: '2.5rem', height: '2.5rem' }}
-                    />
-                    <div>
-                      <p style={{ fontWeight: 600, margin: 0 }}>{u.displayName || 'N/A'}</p>
-                      <p style={{ color: 'var(--text-slate-500)', margin: 0 }}>{u.email}</p>
-                    </div>
-                  </div>
-                </td>
-                <td style={{ padding: '1rem' }}>
-                  <span style={{ 
-                    display: 'inline-flex', 
-                    alignItems: 'center', 
-                    gap: '0.375rem',
-                    padding: '0.25rem 0.625rem',
-                    borderRadius: '9999px',
-                    fontSize: '0.75rem',
-                    fontWeight: 600,
-                    backgroundColor: u.role === 'ADMIN' ? 'rgba(124, 58, 237, 0.1)' : 'rgba(100, 116, 139, 0.1)',
-                    color: u.role === 'ADMIN' ? 'var(--primary)' : 'var(--text-slate-600)'
-                  }}>
-                    {u.role === 'ADMIN' ? <Shield size={12} /> : <UserIcon size={12} />}
-                    {u.role}
-                  </span>
-                </td>
-                <td style={{ padding: '1rem' }}>
-                  <span style={{ 
-                    padding: '0.25rem 0.625rem',
-                    borderRadius: '9999px',
-                    fontSize: '0.75rem',
-                    fontWeight: 600,
-                    backgroundColor: u.deletedAt ? 'rgba(239, 68, 68, 0.1)' : 'rgba(34, 197, 94, 0.1)',
-                    color: u.deletedAt ? 'var(--danger)' : '#166534'
-                  }}>
-                    {u.deletedAt ? 'Deleted' : 'Active'}
-                  </span>
-                </td>
-                <td style={{ padding: '1rem', color: 'var(--text-slate-500)' }}>
-                  {new Date(u.createdAt).toLocaleDateString()}
-                </td>
-                <td style={{ padding: '1rem', textAlign: 'right' }}>
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
-                    {u.deletedAt ? (
-                      <button 
-                        title="Restore User"
-                        onClick={() => {
-                          setUserToAction(u);
-                          setIsConfirmRestoreOpen(true);
-                        }}
-                        style={{ padding: '0.5rem', borderRadius: '0.375rem', border: '1px solid var(--border-color)', background: 'var(--surface)', cursor: 'pointer', color: 'var(--primary)' }}
-                      >
-                        <RotateCcw size={16} />
-                      </button>
-                    ) : (
-                      <>
-                        <button 
-                          title="Reset Password"
-                          onClick={() => {
-                            setUserToAction(u);
-                            setIsConfirmResetOpen(true);
-                          }}
-                          style={{ padding: '0.5rem', borderRadius: '0.375rem', border: '1px solid var(--border-color)', background: 'var(--surface)', cursor: 'pointer' }}
-                        >
-                          <RefreshCcw size={16} />
-                        </button>
-                        <button 
-                          title="Delete User"
-                          onClick={() => {
-                            setUserToAction(u);
-                            setIsConfirmDeleteOpen(true);
-                          }}
-                          style={{ padding: '0.5rem', borderRadius: '0.375rem', border: '1px solid var(--border-color)', background: 'var(--surface)', cursor: 'pointer', color: 'var(--danger)' }}
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Pagination */}
-      {meta.lastPage > 1 && (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '2rem' }}>
-          <button 
-            disabled={page === 1} 
-            onClick={() => setPage(p => p - 1)}
-            style={{ padding: '0.5rem', borderRadius: '0.375rem', border: '1px solid var(--border-color)', background: 'var(--surface)', cursor: page === 1 ? 'not-allowed' : 'pointer' }}
-          >
-            <ChevronLeft size={20} />
-          </button>
-          <span style={{ fontSize: '0.875rem', fontWeight: 500 }}>
-            Page {page} of {meta.lastPage}
-          </span>
-          <button 
-            disabled={page === meta.lastPage} 
-            onClick={() => setPage(p => p + 1)}
-            style={{ padding: '0.5rem', borderRadius: '0.375rem', border: '1px solid var(--border-color)', background: 'var(--surface)', cursor: page === meta.lastPage ? 'not-allowed' : 'pointer' }}
-          >
-            <ChevronRight size={20} />
-          </button>
-        </div>
-      )}
+                <img
+                  className="avatar-img"
+                  src={`https://ui-avatars.com/api/?name=${u.displayName || u.email}&background=7c3aed&color=fff`}
+                  alt=""
+                  style={{ width: '2.5rem', height: '2.5rem', borderRadius: '50%' }}
+                />
+                <div>
+                  <p style={{ fontWeight: 600, margin: 0 }}>{u.displayName || 'N/A'}</p>
+                  <p style={{ color: 'var(--text-slate-500)', margin: 0, fontSize: '0.8125rem' }}>{u.email}</p>
+                </div>
+              </div>
+            )
+          },
+          {
+            key: 'role',
+            header: 'Role',
+            render: (u: User) => (
+              <span style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.375rem',
+                padding: '0.25rem 0.625rem',
+                borderRadius: '9999px',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                backgroundColor: u.role === 'ADMIN' ? 'rgba(124, 58, 237, 0.1)' : 'rgba(100, 116, 139, 0.1)',
+                color: u.role === 'ADMIN' ? 'var(--primary)' : 'var(--text-slate-600)'
+              }}>
+                {u.role === 'ADMIN' ? <Shield size={12} /> : <UserIcon size={12} />}
+                {u.role}
+              </span>
+            )
+          },
+          {
+            key: 'status',
+            header: 'Status',
+            render: (u: User) => (
+              <span style={{
+                padding: '0.25rem 0.625rem',
+                borderRadius: '9999px',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                backgroundColor: u.deletedAt ? 'rgba(239, 68, 68, 0.1)' : 'rgba(34, 197, 94, 0.1)',
+                color: u.deletedAt ? 'var(--danger)' : '#166534'
+              }}>
+                {u.deletedAt ? 'Deleted' : 'Active'}
+              </span>
+            )
+          },
+          {
+            key: 'createdAt',
+            header: 'Created At',
+            render: (u: User) => (
+              <span style={{ color: 'var(--text-slate-500)' }}>
+                {new Date(u.createdAt).toLocaleDateString()}
+              </span>
+            )
+          },
+          {
+            key: 'actions',
+            header: 'Actions',
+            align: 'right',
+            render: (u: User) => (
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                {u.deletedAt ? (
+                  <button
+                    title="Restore User"
+                    onClick={() => {
+                      setUserToAction(u);
+                      setIsConfirmRestoreOpen(true);
+                    }}
+                    style={{ padding: '0.5rem', borderRadius: '0.375rem', border: '1px solid var(--border-color)', background: 'var(--surface)', cursor: 'pointer', color: 'var(--primary)' }}
+                  >
+                    <RotateCcw size={16} />
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      title="Reset Password"
+                      onClick={() => {
+                        setUserToAction(u);
+                        setIsConfirmResetOpen(true);
+                      }}
+                      style={{ padding: '0.5rem', borderRadius: '0.375rem', border: '1px solid var(--border-color)', background: 'var(--surface)', cursor: 'pointer' }}
+                    >
+                      <RefreshCcw size={16} />
+                    </button>
+                    <button
+                      title="Delete User"
+                      onClick={() => {
+                        setUserToAction(u);
+                        setIsConfirmDeleteOpen(true);
+                      }}
+                      style={{ padding: '0.5rem', borderRadius: '0.375rem', border: '1px solid var(--border-color)', background: 'var(--surface)', cursor: 'pointer', color: 'var(--danger)' }}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </>
+                )}
+              </div>
+            )
+          }
+        ]}
+        data={users}
+        keyExtractor={(u: User) => u.id}
+        isLoading={isLoading}
+        emptyMessage="No users found."
+        page={page - 1}
+        totalPages={meta.lastPage}
+        totalRecords={meta.total}
+        limit={limit}
+        onPageChange={(p) => setPage(p + 1)}
+        onLimitChange={(l) => { setLimit(l); setPage(1); }}
+      />
 
       {/* Create User Modal */}
       <Modal 

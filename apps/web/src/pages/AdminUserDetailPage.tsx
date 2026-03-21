@@ -45,7 +45,7 @@ export default function AdminUserDetailPage() {
 
   if (isLoading) {
     return (
-      <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-slate-500)' }}>
+      <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-slate-500)' }}>
         Loading...
       </div>
     );
@@ -53,14 +53,14 @@ export default function AdminUserDetailPage() {
 
   if (!user) {
     return (
-      <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-slate-500)' }}>
+      <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-slate-500)' }}>
         User not found
       </div>
     );
   }
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
+    <div style={{ maxWidth: '1200px', margin: '0 auto', animation: 'fadeIn 0.5s ease-out' }}>
       {/* Header */}
       <button
         onClick={() => navigate('/admin/users')}
@@ -83,7 +83,7 @@ export default function AdminUserDetailPage() {
 
       {/* User Info Card */}
       <div className="card" style={{ padding: '1.5rem', marginBottom: '2rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
           <div style={{
             width: '3.5rem',
             height: '3.5rem',
@@ -128,7 +128,7 @@ export default function AdminUserDetailPage() {
       </div>
 
       {/* Token Usage Summary */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
         <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--text-slate-900)', margin: 0 }}>
           Token Usage
         </h3>
@@ -196,7 +196,7 @@ export default function AdminUserDetailPage() {
             <div
               key={agentType}
               className="card"
-              style={{ padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+              style={{ padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <div style={{
@@ -220,20 +220,20 @@ export default function AdminUserDetailPage() {
                   </p>
                 </div>
               </div>
-              <div style={{ display: 'flex', gap: '2rem', textAlign: 'right' }}>
-                <div>
+              <div className="agent-stats" style={{ display: 'flex', gap: '1.5rem', textAlign: 'right', flexWrap: 'wrap', justifyContent: 'flex-end', minWidth: '200px' }}>
+                <div style={{ minWidth: '60px' }}>
                   <p style={{ margin: 0, fontSize: '0.65rem', color: 'var(--text-slate-400)', textTransform: 'uppercase' }}>Input</p>
                   <p style={{ margin: '0.125rem 0 0 0', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-slate-900)' }}>
                     {formatNumber(stats.inputTokens)}
                   </p>
                 </div>
-                <div>
+                <div style={{ minWidth: '60px' }}>
                   <p style={{ margin: 0, fontSize: '0.65rem', color: 'var(--text-slate-400)', textTransform: 'uppercase' }}>Output</p>
                   <p style={{ margin: '0.125rem 0 0 0', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-slate-900)' }}>
                     {formatNumber(stats.outputTokens)}
                   </p>
                 </div>
-                <div>
+                <div style={{ minWidth: '60px' }}>
                   <p style={{ margin: 0, fontSize: '0.65rem', color: 'var(--text-slate-400)', textTransform: 'uppercase' }}>Cost</p>
                   <p style={{ margin: '0.125rem 0 0 0', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary)' }}>
                     {formatCurrency(stats.totalCostUsd, customRate)}

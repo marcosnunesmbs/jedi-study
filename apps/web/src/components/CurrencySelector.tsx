@@ -56,7 +56,7 @@ export function CurrencySelector({ showRate = true }: CurrencySelectorProps) {
   const { currency, customRate, setCurrency, setCustomRate } = useCurrency();
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
       <select
         value={currency.code}
         onChange={(e) => {

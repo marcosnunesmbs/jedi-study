@@ -367,3 +367,50 @@ body {
   border-bottom: 1px solid var(--border-color);
   padding: 12px;
 }
+
+/* Mobile responsive for agent usage cards */
+@media (max-width: 640px) {
+  .agent-stats {
+    justify-content: center !important;
+    text-align: center !important;
+  }
+  
+  .agent-stats > div {
+    min-width: 80px !important;
+  }
+}
+
+/* Mobile responsive for subject header */
+@media (max-width: 768px) {
+  .subject-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  
+  .subject-header-info {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+  
+  .subject-header-content {
+    width: 100% !important;
+  }
+  
+  .subject-header-content h1 {
+    font-size: 1.5rem !important;
+  }
+  
+  .subject-header-meta {
+    margin-bottom: 0.5rem !important;
+  }
+  
+  .subject-header-goals {
+    margin-bottom: 0.5rem !important;
+  }
+  
+  .subject-header-btn {
+    width: 100% !important;
+    justify-content: center !important;
+    margin-top: 0.5rem !important;
+  }
+}

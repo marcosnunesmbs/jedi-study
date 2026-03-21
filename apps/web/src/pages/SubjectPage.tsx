@@ -107,21 +107,21 @@ export default function SubjectPage() {
         </Link>
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2.5rem' }}>
-        <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
-          <div style={{ width: '4rem', height: '4rem', backgroundColor: 'rgba(124, 58, 237, 0.1)', borderRadius: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
+      <div className="subject-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2.5rem', flexWrap: 'wrap', gap: '1.5rem' }}>
+        <div className="subject-header-info" style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', flex: 1 }}>
+          <div style={{ width: '4rem', height: '4rem', backgroundColor: 'rgba(124, 58, 237, 0.1)', borderRadius: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)', flexShrink: 0 }}>
             <GraduationCap size={40} />
           </div>
-          <div>
+          <div className="subject-header-content" style={{ minWidth: 0 }}>
             <h1 style={{ fontSize: '2.25rem', fontWeight: 'bold', color: 'var(--text-slate-900)', margin: '0 0 0.5rem 0' }}>{sub?.title}</h1>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
+            <div className="subject-header-meta" style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
               <span className={`badge badge-indigo`}>{sub?.skillLevel}</span>
               <span style={{ color: 'var(--text-slate-500)', fontSize: '0.875rem', fontWeight: 500 }}>
                 {path?.totalPhases || 0} Phases · ~{path?.estimatedHours || 0}h estimated
               </span>
             </div>
             {sub?.goals && (
-              <div style={{ color: 'var(--text-slate-600)', fontSize: '0.875rem' }}>
+              <div className="subject-header-goals" style={{ color: 'var(--text-slate-600)', fontSize: '0.875rem' }}>
                 <strong>Goals: </strong>
                 {(() => {
                   try {
@@ -133,12 +133,12 @@ export default function SubjectPage() {
             )}
           </div>
         </div>
-        
+
         <button
-          className="btn-primary"
+          className="btn-primary subject-header-btn"
           onClick={openModal}
           disabled={generateMutation.isPending || path?.status === 'GENERATING'}
-          style={{ background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-slate-600)', padding: '0.625rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+          style={{ background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-slate-600)', padding: '0.625rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap' }}
         >
           {generateMutation.isPending || path?.status === 'GENERATING' ? <Loader2 size={20} className="animate-spin" /> : <RefreshCw size={20} />}
           {path?.status === 'GENERATING' ? 'Generating...' : 'Regenerate Path'}
