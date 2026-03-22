@@ -68,32 +68,31 @@ export default function TaskPage() {
     if ((analysis as any)?.passed && (task as any)?.phaseId) {
       queryClient.invalidateQueries({ queryKey: ['phase', (task as any).phaseId] });
       queryClient.invalidateQueries({ queryKey: ['task', taskId] });
-      // Cascade: invalidate parent queries so SubjectPage and DashboardPage stay fresh
       queryClient.invalidateQueries({ queryKey: ['study-path-active'] });
       queryClient.invalidateQueries({ queryKey: ['subjects'] });
     }
   }, [analysis, (task as any)?.phaseId, taskId, queryClient]);
 
   const t = task as any;
-  const a = (submissionId || !hasLoadedInitial) 
+  const a = (submissionId || !hasLoadedInitial)
     ? (analysis || t?.submissions?.[0]?.analysis)
     : null;
 
   return (
-    <div style={{ animation: 'fadeIn 0.5s ease-out', height: 'calc(100vh - 8rem)', display: 'flex', flexDirection: 'column', margin: '-2rem' }}>
-      {/* Header bar within the page */}
-      <div style={{ padding: '1rem 2rem', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', backgroundColor: 'white', zIndex: 5 }}>
+    <div className="task-page-fullwidth" style={{ animation: 'fadeIn 0.5s ease-out', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--background-light)' }}>
+      {/* Header bar */}
+      <div style={{ padding: '0.75rem 1.5rem', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', backgroundColor: 'var(--background-light)', zIndex: 5, flexShrink: 0 }}>
         <button onClick={handleBack} style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: 'var(--text-slate-500)', background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 500, padding: 0 }}>
           <ChevronLeft size={20} />
           Back to Phase
         </button>
         <div style={{ width: '1px', height: '1.5rem', backgroundColor: 'var(--border-color)', margin: '0 1rem' }}></div>
-        <span className="badge badge-indigo">{t?.type}</span>
+        <span className="badge badge-indigo">{t?.type?.replace('_', ' ')}</span>
       </div>
 
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
         {/* Left Panel - Task Description */}
-        <section style={{ width: '50%', overflowY: 'auto', padding: '2rem', borderRight: '1px solid var(--border-color)', backgroundColor: 'white' }}>
+        <section style={{ width: '50%', overflowY: 'auto', padding: '2rem', borderRight: '1px solid var(--border-color)', backgroundColor: 'var(--background-light)' }}>
           <h1 style={{ fontSize: '1.875rem', fontWeight: 700, color: 'var(--text-slate-900)', marginBottom: '1rem' }}>{t?.title}</h1>
 
           {/* Task prompt (main content) */}
@@ -103,10 +102,10 @@ export default function TaskPage() {
 
           {/* Expected response format */}
           {t?.expectedResponseFormat && (
-            <div style={{ marginTop: '1.5rem', padding: '1rem', backgroundColor: 'rgba(99, 102, 241, 0.05)', borderRadius: '0.75rem', border: '1px solid rgba(99, 102, 241, 0.15)', display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
-              <FileText size={18} style={{ color: '#6366f1', flexShrink: 0, marginTop: '0.125rem' }} />
+            <div style={{ marginTop: '1.5rem', padding: '1rem', backgroundColor: 'rgba(99, 102, 241, 0.08)', borderRadius: '0.75rem', border: '1px solid rgba(99, 102, 241, 0.2)', display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+              <FileText size={18} style={{ color: '#818cf8', flexShrink: 0, marginTop: '0.125rem' }} />
               <div>
-                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#6366f1', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Expected Response Format</div>
+                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#818cf8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Expected Response Format</div>
                 <div style={{ fontSize: '0.875rem', color: 'var(--text-slate-600)', lineHeight: 1.5 }}>{t.expectedResponseFormat}</div>
               </div>
             </div>
@@ -133,7 +132,7 @@ export default function TaskPage() {
                 {showHints && (
                   <ul style={{ listStyle: 'none', padding: 0, margin: '0.75rem 0 0 0', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                     {hints.map((hint: string, i: number) => (
-                      <li key={i} style={{ padding: '0.75rem', backgroundColor: 'rgba(245, 158, 11, 0.05)', border: '1px solid rgba(245, 158, 11, 0.15)', borderRadius: '0.5rem', fontSize: '0.875rem', color: 'var(--text-slate-600)', display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+                      <li key={i} style={{ padding: '0.75rem', backgroundColor: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.2)', borderRadius: '0.5rem', fontSize: '0.875rem', color: 'var(--text-slate-600)', display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
                         <Lightbulb size={14} style={{ color: '#f59e0b', flexShrink: 0, marginTop: '0.125rem' }} />
                         {hint}
                       </li>
@@ -161,25 +160,25 @@ export default function TaskPage() {
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', backgroundColor: 'var(--border-color)', border: '1px solid var(--border-color)', borderTop: 'none', borderRadius: '0 0 0.75rem 0.75rem', overflow: 'hidden' }}>
-                <div style={{ backgroundColor: 'white', padding: '1.5rem' }}>
-                  <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#059669', fontWeight: 600, margin: '0 0 1rem 0' }}>
+                <div style={{ backgroundColor: 'var(--background-light)', padding: '1.5rem' }}>
+                  <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#10b981', fontWeight: 600, margin: '0 0 1rem 0' }}>
                     <CheckCircle size={20} /> Strengths
                   </h3>
                   <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                     {(a.strengths || []).map((s: string, i: number) => (
-                      <li key={i} style={{ padding: '0.75rem', backgroundColor: '#ecfdf5', border: '1px solid #d1fae5', borderRadius: '0.5rem', fontSize: '0.875rem', color: '#065f46' }}>
+                      <li key={i} style={{ padding: '0.75rem', backgroundColor: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.2)', borderRadius: '0.5rem', fontSize: '0.875rem', color: 'var(--text-slate-700)' }}>
                         {s}
                       </li>
                     ))}
                   </ul>
                 </div>
-                <div style={{ backgroundColor: 'white', padding: '1.5rem' }}>
-                  <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#d97706', fontWeight: 600, margin: '0 0 1rem 0' }}>
+                <div style={{ backgroundColor: 'var(--background-light)', padding: '1.5rem' }}>
+                  <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#f59e0b', fontWeight: 600, margin: '0 0 1rem 0' }}>
                     <Info size={20} /> Improvements
                   </h3>
                   <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                     {(a.improvements || []).map((s: string, i: number) => (
-                      <li key={i} style={{ padding: '0.75rem', backgroundColor: '#fffbeb', border: '1px solid #fef3c7', borderRadius: '0.5rem', fontSize: '0.875rem', color: '#92400e' }}>
+                      <li key={i} style={{ padding: '0.75rem', backgroundColor: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.2)', borderRadius: '0.5rem', fontSize: '0.875rem', color: 'var(--text-slate-700)' }}>
                         {s}
                       </li>
                     ))}
@@ -195,8 +194,7 @@ export default function TaskPage() {
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
                 <button
                   onClick={() => { setSubmissionId(null); setSubmission(t?.submissions?.[0]?.content || ''); }}
-                  className="btn-primary"
-                  style={{ background: 'transparent', color: 'var(--text-slate-600)', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                  style={{ background: 'transparent', color: 'var(--text-slate-500)', border: '1px solid var(--border-color)', borderRadius: '0.5rem', padding: '0.5rem 1rem', cursor: 'pointer', fontWeight: 500, fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
                 >
                   <RefreshCw size={18} />
                   Try Again
@@ -209,15 +207,15 @@ export default function TaskPage() {
 
         {/* Right Panel - Text Editor / Submission Area */}
         <section style={{ width: '50%', display: 'flex', flexDirection: 'column', backgroundColor: '#010409' }}>
-          <div style={{ height: '2.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', padding: '0 1rem', justifyContent: 'space-between', backgroundColor: 'rgba(0,0,0,0.2)' }}>
-            <span style={{ fontSize: '0.75rem', fontFamily: 'monospace', color: 'var(--text-slate-500)' }}>submission.txt</span>
+          <div style={{ height: '2.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', padding: '0 1rem', justifyContent: 'space-between', backgroundColor: 'rgba(0,0,0,0.2)', flexShrink: 0 }}>
+            <span style={{ fontSize: '0.75rem', fontFamily: 'monospace', color: 'rgba(255,255,255,0.4)' }}>submission.txt</span>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               <div style={{ width: '0.5rem', height: '0.5rem', borderRadius: '50%', backgroundColor: 'rgba(239,68,68,0.3)' }}></div>
               <div style={{ width: '0.5rem', height: '0.5rem', borderRadius: '50%', backgroundColor: 'rgba(245,158,11,0.3)' }}></div>
               <div style={{ width: '0.5rem', height: '0.5rem', borderRadius: '50%', backgroundColor: 'rgba(16,185,129,0.3)' }}></div>
             </div>
           </div>
-          
+
           <div style={{ flex: 1, position: 'relative' }}>
             <textarea
               value={submission}
@@ -231,17 +229,17 @@ export default function TaskPage() {
                 border: 'none', resize: 'none', outline: 'none'
               }}
             />
-            
+
             {submissionId && !a && (
               <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(1,4,9,0.8)', backdropFilter: 'blur(4px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
                 <div style={{ width: '3rem', height: '3rem', borderRadius: '50%', border: '3px solid rgba(255,255,255,0.1)', borderTopColor: 'var(--primary)', animation: 'spin 1s linear infinite', marginBottom: '1rem' }}></div>
-                <p style={{ fontWeight: 500, color: 'var(--text-slate-300)' }}>AI Oracle is analyzing your response...</p>
+                <p style={{ fontWeight: 500, color: 'rgba(255,255,255,0.6)' }}>AI Oracle is analyzing your response...</p>
               </div>
             )}
           </div>
 
           {(!a && !submissionId) && (
-            <div style={{ padding: '1rem', borderTop: '1px solid rgba(255,255,255,0.05)', backgroundColor: 'rgba(0,0,0,0.2)', display: 'flex', justifyContent: 'flex-end' }}>
+            <div style={{ padding: '1rem', borderTop: '1px solid rgba(255,255,255,0.05)', backgroundColor: 'rgba(0,0,0,0.2)', display: 'flex', justifyContent: 'flex-end', flexShrink: 0 }}>
               <button
                 className="btn-primary"
                 onClick={() => submitMutation.mutate(submission)}
