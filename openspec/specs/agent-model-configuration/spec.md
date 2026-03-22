@@ -1,7 +1,7 @@
 ## ADDED Requirements
 
 ### Requirement: Admin pode configurar modelo para tipo de agente
-O sistema SHALL permitir que administradores configurem qual modelo cada tipo de agente deve utilizar.
+O sistema SHALL permitir que administradores configurem qual modelo cada tipo de agente deve utilizar, incluindo o novo tipo TASK_GENERATOR.
 
 #### Scenario: Configurar modelo para agente
 - **WHEN** admin seleciona um tipo de agente e um modelo cadastrado
@@ -52,7 +52,7 @@ O sistema SHALL fazer o agente usar o modelo recebido na requisição.
 - CONTENT_GEN
 - PATH_GENERATOR
 - TASK_ANALYZER
-- PROJECT_ANALYZER
+- TASK_GENERATOR
 - SAFETY
 
 ## API Endpoints
