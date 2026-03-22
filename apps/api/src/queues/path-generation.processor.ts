@@ -7,8 +7,10 @@ import { Phase } from '../database/entities/phase.entity';
 import { Task } from '../database/entities/task.entity';
 import { StudyPath } from '../database/entities/study-path.entity';
 import { AgentJob } from '../database/entities/agent-job.entity';
+import { AgentType } from '../database/entities/agent-model-config.entity';
 import { AgentsService } from '../modules/agents/agents.service';
 import { TokenUsageService } from '../modules/token-usage/token-usage.service';
+import { AgentModelConfigService } from '../modules/model-prices/agent-model-config.service';
 import { StudyPathOutputSchema } from '../shared';
 
 interface PathGenerationJob {
@@ -33,6 +35,7 @@ export class PathGenerationProcessor {
     private readonly studyPathRepository: Repository<StudyPath>,
     private readonly agents: AgentsService,
     private readonly tokenUsage: TokenUsageService,
+    private readonly agentModelConfigService: AgentModelConfigService,
   ) {}
 
   @Process('generate')
@@ -47,11 +50,15 @@ export class PathGenerationProcessor {
     );
 
     try {
+      const modelConfig = await this.agentModelConfigService.findByAgentType(AgentType.PATH_GENERATOR);
+      const model = modelConfig?.modelPrice?.name;
+
       const response = await this.agents.generatePath({
         subjectTitle,
         skillLevel,
         goals,
         userContext,
+        model,
       });
 
       // Record token usage
@@ -60,6 +67,7 @@ export class PathGenerationProcessor {
         agentType: 'PATH_GENERATOR',
         referenceId: studyPathId,
         referenceType: 'StudyPath',
+        model,
         usage: response.usage,
       });
 

@@ -10,13 +10,16 @@ async def analyze_project(
     task_description: str,
     submission: str,
     project_context: dict = None,
+    model: str = "",
 ) -> AgentResponse:
     client = get_client()
     prompt = build_prompt(task_title, task_description, submission, project_context)
+    
+    model_name = model or settings.gemini_model
 
     start_time = time.time()
     response = await client.aio.models.generate_content(
-        model=settings.gemini_model,
+        model=model_name,
         contents=prompt,
         config={
             "system_instruction": SYSTEM_PROMPT,
@@ -27,6 +30,6 @@ async def analyze_project(
     )
 
     output = ProjectAnalysisOutput.model_validate_json(response.text)
-    usage = build_usage(response, start_time, model_name=settings.gemini_model)
+    usage = build_usage(response, start_time, model_name=model_name)
 
     return AgentResponse(data=output.model_dump(), usage=usage)

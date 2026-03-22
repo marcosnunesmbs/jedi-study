@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../../store/auth.store';
-import { Sparkles, LayoutDashboard, Coins, LogOut, Search, Bell, Plus, Menu, X, Sun, Moon, User, Users } from 'lucide-react';
+import { Sparkles, LayoutDashboard, Coins, LogOut, Search, Bell, Plus, Menu, X, Sun, Moon, User, Users, Settings } from 'lucide-react';
 
 export default function AppShell() {
   const { user, logout } = useAuthStore();
@@ -81,6 +81,14 @@ export default function AppShell() {
               <Link to="/admin/users" className={`nav-link ${isActive('/admin/users') ? 'active' : ''}`} onClick={handleNavClick}>
                 <Users size={20} />
                 <span>Users</span>
+              </Link>
+              <Link to="/admin/model-prices" className={`nav-link ${isActive('/admin/model-prices') ? 'active' : ''}`} onClick={handleNavClick}>
+                <Settings size={20} />
+                <span>Model Prices</span>
+              </Link>
+              <Link to="/admin/agent-model-configs" className={`nav-link ${isActive('/admin/agent-model-configs') ? 'active' : ''}`} onClick={handleNavClick}>
+                <Settings size={20} />
+                <span>Agent Models</span>
               </Link>
             </>
           )}

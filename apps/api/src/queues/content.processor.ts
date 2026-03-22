@@ -5,8 +5,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Content } from '../database/entities/content.entity';
 import { AgentJob } from '../database/entities/agent-job.entity';
+import { AgentType } from '../database/entities/agent-model-config.entity';
 import { AgentsService } from '../modules/agents/agents.service';
 import { TokenUsageService } from '../modules/token-usage/token-usage.service';
+import { AgentModelConfigService } from '../modules/model-prices/agent-model-config.service';
 
 interface ContentGenerationJob {
   contentId: string;
@@ -30,6 +32,7 @@ export class ContentProcessor {
     private readonly agentJobRepository: Repository<AgentJob>,
     private readonly agents: AgentsService,
     private readonly tokenUsage: TokenUsageService,
+    private readonly agentModelConfigService: AgentModelConfigService,
   ) {}
 
   @Process('generate')
@@ -49,12 +52,16 @@ export class ContentProcessor {
     );
 
     try {
+      const modelConfig = await this.agentModelConfigService.findByAgentType(AgentType.CONTENT_GEN);
+      const model = modelConfig?.modelPrice?.name;
+
       const response = await this.agents.generateContent({
         phaseTitle,
         phaseObjectives,
         contentType,
         customPrompt,
         topicTitle: topic,
+        model,
       });
 
       // Record token usage
@@ -63,6 +70,7 @@ export class ContentProcessor {
         agentType: 'CONTENT_GEN',
         referenceId: contentId,
         referenceType: 'Content',
+        model,
         usage: response.usage,
       });
 

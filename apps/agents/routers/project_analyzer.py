@@ -12,6 +12,7 @@ class ProjectAnalyzerRequest(BaseModel):
     taskType: str
     submissionContent: str
     projectContext: Optional[Dict[str, Any]] = None
+    model: Optional[str] = None
 
 
 @router.post("")
@@ -22,6 +23,7 @@ async def analyze(req: ProjectAnalyzerRequest):
             task_description=req.taskDescription,
             submission=req.submissionContent,
             project_context=req.projectContext,
+            model=req.model or ""
         )
         return result.model_dump()
     except Exception as e:

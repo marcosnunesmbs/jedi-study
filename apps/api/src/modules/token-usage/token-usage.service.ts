@@ -10,6 +10,7 @@ export interface RecordTokenUsageDto {
   agentType: string;
   referenceId: string;
   referenceType: string;
+  model?: string;
   usage: TokenUsageInfo;
 }
 
@@ -29,12 +30,14 @@ export class TokenUsageService {
     const outputCost = (dto.usage.outputTokens / 1000000) * costOutput1M;
     const totalCost = inputCost + outputCost;
 
+    const model = dto.model || dto.usage.model || 'unknown';
+
     const tokenUsage = this.tokenUsageRepository.create({
       userId: dto.userId,
       agentType: dto.agentType,
       referenceId: dto.referenceId,
       referenceType: dto.referenceType,
-      model: dto.usage.model,
+      model,
       inputTokens: dto.usage.inputTokens,
       outputTokens: dto.usage.outputTokens,
       totalTokens: dto.usage.totalTokens,
@@ -85,6 +88,14 @@ export class TokenUsageService {
       totalCostUsd: number;
     }> = {};
 
+    const byModel: Record<string, {
+      calls: number;
+      inputTokens: number;
+      outputTokens: number;
+      totalTokens: number;
+      totalCostUsd: number;
+    }> = {};
+
     const uniqueUsers = new Set();
     let totalInputTokens = 0;
     let totalOutputTokens = 0;
@@ -93,6 +104,8 @@ export class TokenUsageService {
 
     for (const r of all) {
       uniqueUsers.add(r.userId);
+      
+      // By Agent
       if (!byAgent[r.agentType]) {
         byAgent[r.agentType] = { calls: 0, inputTokens: 0, outputTokens: 0, totalTokens: 0, totalCostUsd: 0 };
       }
@@ -101,6 +114,18 @@ export class TokenUsageService {
       byAgent[r.agentType].outputTokens += r.outputTokens;
       byAgent[r.agentType].totalTokens += r.totalTokens;
       byAgent[r.agentType].totalCostUsd += r.estimatedCostUsd;
+      
+      // By Model
+      const model = r.model || 'unknown';
+      if (!byModel[model]) {
+        byModel[model] = { calls: 0, inputTokens: 0, outputTokens: 0, totalTokens: 0, totalCostUsd: 0 };
+      }
+      byModel[model].calls++;
+      byModel[model].inputTokens += r.inputTokens;
+      byModel[model].outputTokens += r.outputTokens;
+      byModel[model].totalTokens += r.totalTokens;
+      byModel[model].totalCostUsd += r.estimatedCostUsd;
+      
       totalInputTokens += r.inputTokens;
       totalOutputTokens += r.outputTokens;
       totalTokens += r.totalTokens;
@@ -119,6 +144,7 @@ export class TokenUsageService {
       totalUsers,
       averageCostPerUser: Math.round(averageCostPerUser * 1000000) / 1000000,
       byAgent,
+      byModel,
     };
   }
 

@@ -5,12 +5,12 @@ from agents.safety.prompts import SYSTEM_PROMPT, build_prompt
 from config import settings
 
 
-async def generate_safety_report(user_input: str) -> AgentResponse:
+async def generate_safety_report(user_input: str, model: str = "") -> AgentResponse:
     client = get_client()
     prompt = build_prompt(user_input)
 
-    # Use specialized safety model if provided, else default
-    model_name = settings.gemini_model_safety or settings.gemini_model
+    # Use model from request if provided, else fallback to safety model or default
+    model_name = model or settings.gemini_model_safety or settings.gemini_model
 
     start_time = time.time()
     response = await client.aio.models.generate_content(

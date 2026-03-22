@@ -7,6 +7,7 @@ import { ContentProcessor } from './content.processor';
 import { AgentsModule } from '../modules/agents/agents.module';
 import { TokenUsageModule } from '../modules/token-usage/token-usage.module';
 import { PhasesModule } from '../modules/phases/phases.module';
+import { ModelPricesModule } from '../modules/model-prices/model-prices.module';
 import { AgentJob } from '../database/entities/agent-job.entity';
 import { StudyPath } from '../database/entities/study-path.entity';
 import { Phase } from '../database/entities/phase.entity';
@@ -34,6 +35,7 @@ import { Content } from '../database/entities/content.entity';
     AgentsModule,
     TokenUsageModule,
     PhasesModule,
+    ModelPricesModule,
   ],
   providers: [
     PathGenerationProcessor,

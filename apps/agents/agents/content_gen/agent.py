@@ -11,13 +11,16 @@ async def generate_content(
     topic_title: str = "",
     task_context: str = "",
     custom_prompt: str = "",
+    model: str = "",
 ) -> AgentResponse:
     client = get_client()
     prompt = build_prompt(phase_title, phase_objectives, content_type, topic_title, task_context, custom_prompt)
+    
+    model_name = model or settings.gemini_model
 
     start_time = time.time()
     response = await client.aio.models.generate_content(
-        model=settings.gemini_model,
+        model=model_name,
         contents=prompt,
         config={
             "system_instruction": SYSTEM_PROMPT,
@@ -25,6 +28,6 @@ async def generate_content(
         },
     )
 
-    usage = build_usage(response, start_time, model_name=settings.gemini_model)
+    usage = build_usage(response, start_time, model_name=model_name)
 
     return AgentResponse(data=response.text.strip(), usage=usage)

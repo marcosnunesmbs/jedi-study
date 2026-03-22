@@ -7,8 +7,10 @@ import { Submission } from '../database/entities/submission.entity';
 import { Analysis } from '../database/entities/analysis.entity';
 import { Task } from '../database/entities/task.entity';
 import { AgentJob } from '../database/entities/agent-job.entity';
+import { AgentType } from '../database/entities/agent-model-config.entity';
 import { AgentsService } from '../modules/agents/agents.service';
 import { TokenUsageService } from '../modules/token-usage/token-usage.service';
+import { AgentModelConfigService } from '../modules/model-prices/agent-model-config.service';
 import { PhasesService } from '../modules/phases/phases.service';
 
 interface TaskAnalysisJob {
@@ -40,6 +42,7 @@ export class TaskAnalysisProcessor {
     private readonly agentJobRepository: Repository<AgentJob>,
     private readonly agents: AgentsService,
     private readonly tokenUsage: TokenUsageService,
+    private readonly agentModelConfigService: AgentModelConfigService,
     private readonly phases: PhasesService,
   ) {}
 
@@ -64,6 +67,10 @@ export class TaskAnalysisProcessor {
 
     try {
       const agentType = taskType === 'PROJECT' ? 'PROJECT_ANALYZER' : 'TASK_ANALYZER';
+      const agentTypeEnum = taskType === 'PROJECT' ? AgentType.PROJECT_ANALYZER : AgentType.TASK_ANALYZER;
+
+      const modelConfig = await this.agentModelConfigService.findByAgentType(agentTypeEnum);
+      const model = modelConfig?.modelPrice?.name;
 
       const response = await this.agents.analyzeTask({
         taskTitle,
@@ -71,6 +78,7 @@ export class TaskAnalysisProcessor {
         taskType,
         submissionContent,
         projectContext,
+        model,
       });
 
       // Record token usage
@@ -79,6 +87,7 @@ export class TaskAnalysisProcessor {
         agentType,
         referenceId: submissionId,
         referenceType: 'Submission',
+        model,
         usage: response.usage,
       });
 

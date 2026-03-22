@@ -45,7 +45,7 @@ export function formatCurrency(value: number, customRate: number): string {
   const { currency } = useCurrency();
   const rate = customRate > 0 ? customRate : 1;
   const converted = value * rate;
-  return `${currency.symbol}${converted.toFixed(currency.code === 'USD' ? 4 : 2)}`;
+  return `${currency.symbol}${converted.toFixed(4)}`;
 }
 
 interface CurrencySelectorProps {

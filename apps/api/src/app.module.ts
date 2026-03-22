@@ -14,6 +14,7 @@ import { TasksModule } from './modules/tasks/tasks.module';
 import { ContentModule } from './modules/content/content.module';
 import { AgentsModule } from './modules/agents/agents.module';
 import { TokenUsageModule } from './modules/token-usage/token-usage.module';
+import { ModelPricesModule } from './modules/model-prices/model-prices.module';
 import { QueuesModule } from './queues/queues.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { InitializationService } from './common/services/initialization.service';
@@ -49,6 +50,7 @@ import { InitializationService } from './common/services/initialization.service'
     ContentModule,
     AgentsModule,
     TokenUsageModule,
+    ModelPricesModule,
     QueuesModule,
   ],
   providers: [

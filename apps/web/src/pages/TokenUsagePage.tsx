@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { tokenUsageApi } from '../api/token-usage.api';
 import { DataTable } from '../components/DataTable';
 import { AgentUsageCard } from '../components/AgentUsageCard';
+import { ModelUsageCard } from '../components/ModelUsageCard';
 import { CreditCard, Coins, Zap, Users, Clock } from 'lucide-react';
 import { useCurrency, CurrencySelector } from '../components/CurrencySelector';
 import { formatNumber, formatCurrency } from '../utils/format';
@@ -100,6 +101,20 @@ export default function TokenUsagePage() {
         </section>
       )}
 
+      {/* Usage by Model */}
+      {s?.byModel && Object.keys(s.byModel).length > 0 && (
+        <section style={{ marginBottom: '2.5rem' }}>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--text-slate-900)', marginBottom: '1rem' }}>
+            Usage by Model
+          </h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
+            {Object.entries(s.byModel).map(([modelName, stats]: [string, any]) => (
+              <ModelUsageCard key={modelName} modelName={modelName} stats={stats} />
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Recent Activity Table */}
       <DataTable
         columns={[
@@ -112,6 +127,15 @@ export default function TokenUsagePage() {
                 <div style={{ fontWeight: 600, color: 'var(--text-slate-700)' }}>{r.agentType}</div>
                 <div style={{ fontFamily: 'monospace', fontSize: '0.65rem', color: 'var(--text-slate-400)' }}>{r.id.split('-')[0]}...</div>
               </div>
+            )
+          },
+          {
+            key: 'model',
+            header: 'Model',
+            render: (r: any) => (
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-slate-600)' }}>
+                {r.model || '-'}
+              </span>
             )
           },
           {

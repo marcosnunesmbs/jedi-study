@@ -11,6 +11,8 @@ import { Analysis } from './entities/analysis.entity';
 import { Content } from './entities/content.entity';
 import { AgentJob } from './entities/agent-job.entity';
 import { TokenUsage } from './entities/token-usage.entity';
+import { ModelPrice } from './entities/model-price.entity';
+import { AgentModelConfig } from './entities/agent-model-config.entity';
 
 const isTs = __filename.endsWith('.ts');
 
@@ -28,6 +30,8 @@ export const AppDataSource = new DataSource({
     Content,
     AgentJob,
     TokenUsage,
+    ModelPrice,
+    AgentModelConfig,
   ],
   migrations: [join(__dirname, 'migrations', isTs ? '*.ts' : '*.js')],
   synchronize: false,

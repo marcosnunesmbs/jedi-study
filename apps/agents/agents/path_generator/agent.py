@@ -10,13 +10,16 @@ async def generate_study_path(
     skill_level: str,
     goals: list[str],
     user_context: str = "",
+    model: str = "",
 ) -> AgentResponse:
     client = get_client()
     prompt = build_prompt(subject_title, skill_level, goals, user_context)
+    
+    model_name = model or settings.gemini_model
 
     start_time = time.time()
     response = await client.aio.models.generate_content(
-        model=settings.gemini_model,
+        model=model_name,
         contents=prompt,
         config={
             "system_instruction": SYSTEM_PROMPT,
@@ -27,6 +30,6 @@ async def generate_study_path(
     )
 
     output = StudyPathOutput.model_validate_json(response.text)
-    usage = build_usage(response, start_time, model_name=settings.gemini_model)
+    usage = build_usage(response, start_time, model_name=model_name)
 
     return AgentResponse(data=output.model_dump(), usage=usage)

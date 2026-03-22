@@ -6,7 +6,7 @@
     "docker:api": "docker compose -f apps/api/docker-compose.yml up --build",
     "docker:web": "docker compose -f apps/web/docker-compose.yml up --build",
     "start:agents": "cd apps/agents && uv run uvicorn main:app --reload --port 8001",
-    "start:api": "cd apps/api && npm run start:dev",
+    "start:api": "cd apps/api && npm run db:migration:run && npm run start:dev",
     "start:web": "cd apps/web && npm run dev"
   },
   "engines": {

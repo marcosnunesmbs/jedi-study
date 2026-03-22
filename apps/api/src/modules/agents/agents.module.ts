@@ -4,6 +4,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AgentsService } from './agents.service';
 import { SafetyService } from './safety.service';
 import { TokenUsageModule } from '../token-usage/token-usage.module';
+import { ModelPricesModule } from '../model-prices/model-prices.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { TokenUsageModule } from '../token-usage/token-usage.module';
       inject: [ConfigService],
     }),
     TokenUsageModule,
+    ModelPricesModule,
   ],
   providers: [AgentsService, SafetyService],
   exports: [AgentsService, SafetyService],

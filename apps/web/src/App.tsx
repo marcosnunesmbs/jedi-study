@@ -10,6 +10,8 @@ import TokenUsagePage from './pages/TokenUsagePage';
 import ProfilePage from './pages/ProfilePage';
 import AdminUsersPage from './pages/AdminUsersPage';
 import AdminUserDetailPage from './pages/AdminUserDetailPage';
+import ModelPricesPage from './pages/ModelPricesPage';
+import AgentModelConfigsPage from './pages/AgentModelConfigsPage';
 import AppShell from './components/layout/AppShell';
 import { CurrencyProvider } from './components/CurrencySelector';
 
@@ -65,6 +67,22 @@ export default function App() {
           element={
             <AdminRoute>
               <AdminUserDetailPage />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="admin/model-prices"
+          element={
+            <AdminRoute>
+              <ModelPricesPage />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="admin/agent-model-configs"
+          element={
+            <AdminRoute>
+              <AgentModelConfigsPage />
             </AdminRoute>
           }
         />

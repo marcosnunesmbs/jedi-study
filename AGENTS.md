@@ -89,16 +89,14 @@ WEB_PORT=5177
 
 ### `apps/agents/.env`
 ```
-GOOGLE_API_KEY=...
-GEMINI_MODEL=gemini-3.1-flash-lite-preview
-GEMINI_INPUT_PRICE_PER_1M=0.25
-GEMINI_OUTPUT_PRICE_PER_1M=1.50
-GEMINI_MODEL_SAFETY=gemini-2.5-flash-lite   # Separate model for safety checks
-GEMINI_SAFETY_INPUT_PRICE_PER_1M=0.10
-GEMINI_SAFETY_OUTPUT_PRICE_PER_1M=0.40
+GOOGLE_API_KEY=...                           # Required - Google API key
+GEMINI_MODEL=gemini-2.5-flash-lite-preview   # Fallback model (used if no DB config)
+GEMINI_MODEL_SAFETY=gemini-2.5-flash-lite   # Fallback safety model
 API_ORIGIN=http://localhost:3003
 AGENTS_PORT=8008
 ```
+
+> **Note:** Model pricing is now managed via the admin panel (`/admin/model-prices` and `/admin/agent-model-configs`). The environment variables above serve as fallbacks when no configuration exists in the database.
 
 ## Architecture Details
 

@@ -8,6 +8,7 @@ export interface GeneratePathPayload {
   skillLevel: string;
   goals: string[];
   userContext?: string;
+  model?: string;
 }
 
 export interface GenerateContentPayload {
@@ -17,6 +18,7 @@ export interface GenerateContentPayload {
   taskContext?: string;
   contentType: string;
   customPrompt?: string;
+  model?: string;
 }
 
 export interface AnalyzeTaskPayload {
@@ -25,10 +27,12 @@ export interface AnalyzeTaskPayload {
   taskType: string;
   submissionContent: string;
   projectContext?: Record<string, unknown>;
+  model?: string;
 }
 
 export interface SafetyCheckPayload {
   prompt: string;
+  model?: string;
 }
 
 @Injectable()

@@ -13,6 +13,7 @@ class PathGeneratorRequest(BaseModel):
     skillLevel: str
     goals: List[str]
     userContext: Optional[str] = None
+    model: Optional[str] = None
 
 
 @router.post("")
@@ -23,6 +24,7 @@ async def generate_path(req: PathGeneratorRequest):
             skill_level=req.skillLevel,
             goals=req.goals,
             user_context=req.userContext or "",
+            model=req.model or ""
         )
         return result.model_dump()
     except Exception as e:
