@@ -2,7 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { usersApi, UserWithTokenUsage } from '../api/users.api';
 import { AgentUsageCard } from '../components/AgentUsageCard';
-import { ChevronLeft, CreditCard, Zap, FileText, DollarSign, BookOpen } from 'lucide-react';
+import { ChevronLeft, CreditCard, Zap, FileText, DollarSign, BookOpen, Activity } from 'lucide-react';
 import { useCurrency, CurrencySelector } from '../components/CurrencySelector';
 import { formatNumber, formatCurrency } from '../utils/format';
 
@@ -112,7 +112,7 @@ export default function AdminUserDetailPage() {
         <CurrencySelector />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginBottom: '2rem' }}>
         <div className="card" style={{ padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <div style={{ padding: '0.5rem', backgroundColor: 'rgba(124, 58, 237, 0.1)', color: 'var(--primary)', borderRadius: '0.5rem' }}>
             <CreditCard size={20} />
@@ -157,6 +157,30 @@ export default function AdminUserDetailPage() {
             <p style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--text-slate-400)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 0.125rem 0' }}>Total Calls</p>
             <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--text-slate-900)', margin: 0 }}>
               {tokenUsage?.totalCalls || 0}
+            </h3>
+          </div>
+        </div>
+
+        <div className="card" style={{ padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ padding: '0.5rem', backgroundColor: 'rgba(124, 58, 237, 0.1)', color: 'var(--primary)', borderRadius: '0.5rem' }}>
+            <BookOpen size={20} />
+          </div>
+          <div>
+            <p style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--text-slate-400)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 0.125rem 0' }}>Avg/Subject</p>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--text-slate-900)', margin: 0 }}>
+              {formatCurrency(user.subjectsCount > 0 ? (tokenUsage?.totalCostUsd || 0) / user.subjectsCount : 0, customRate)}
+            </h3>
+          </div>
+        </div>
+
+        <div className="card" style={{ padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ padding: '0.5rem', backgroundColor: 'rgba(124, 58, 237, 0.1)', color: 'var(--primary)', borderRadius: '0.5rem' }}>
+            <Activity size={20} />
+          </div>
+          <div>
+            <p style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--text-slate-400)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 0.125rem 0' }}>Avg/Call</p>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--text-slate-900)', margin: 0 }}>
+              {formatCurrency((tokenUsage?.totalCalls || 0) > 0 ? (tokenUsage?.totalCostUsd || 0) / (tokenUsage?.totalCalls || 1) : 0, customRate)}
             </h3>
           </div>
         </div>

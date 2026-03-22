@@ -4,7 +4,7 @@ import { tokenUsageApi } from '../api/token-usage.api';
 import { DataTable } from '../components/DataTable';
 import { AgentUsageCard } from '../components/AgentUsageCard';
 import { ModelUsageCard } from '../components/ModelUsageCard';
-import { CreditCard, Coins, Zap, Users, Clock } from 'lucide-react';
+import { CreditCard, Coins, Zap, Users, Clock, Activity } from 'lucide-react';
 import { useCurrency, CurrencySelector } from '../components/CurrencySelector';
 import { formatNumber, formatCurrency } from '../utils/format';
 
@@ -73,6 +73,16 @@ export default function TokenUsagePage() {
           <div>
             <p style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--text-slate-400)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 0.125rem 0' }}>Avg/User</p>
             <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--text-slate-900)', margin: 0 }}>{formatCurrency(s?.averageCostPerUser || 0, customRate)}</h3>
+          </div>
+        </div>
+
+        <div className="card" style={{ padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ padding: '0.5rem', backgroundColor: 'rgba(124, 58, 237, 0.1)', color: 'var(--primary)', borderRadius: '0.5rem' }}>
+            <Activity size={20} />
+          </div>
+          <div>
+            <p style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--text-slate-400)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 0.125rem 0' }}>Avg/Call</p>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--text-slate-900)', margin: 0 }}>{formatCurrency(s?.totalCalls > 0 ? s.totalCostUsd / s.totalCalls : 0, customRate)}</h3>
           </div>
         </div>
 

@@ -99,8 +99,10 @@ export class TasksService {
           taskDescription: task.description,
           taskType: task.type,
           submissionContent: content,
-          projectContext: task.projectContext
-            ? JSON.parse(task.projectContext)
+          taskPrompt: task.prompt || undefined,
+          expectedResponseFormat: task.expectedResponseFormat || undefined,
+          evaluationCriteria: task.evaluationCriteria
+            ? JSON.parse(task.evaluationCriteria)
             : undefined,
         },
         {
@@ -112,7 +114,7 @@ export class TasksService {
 
       const agentJob = this.agentJobRepository.create({
         bullJobId: `task-analysis:${job.id}`,
-        type: task.type === 'PROJECT' ? 'PROJECT_ANALYZER' : 'TASK_ANALYZER',
+        type: 'TASK_ANALYZER',
         status: 'QUEUED',
         referenceId: submission.id,
       });
@@ -185,8 +187,10 @@ export class TasksService {
           taskDescription: task.description,
           taskType: task.type,
           submissionContent: submission.content,
-          projectContext: task.projectContext
-            ? JSON.parse(task.projectContext)
+          taskPrompt: task.prompt,
+          expectedResponseFormat: task.expectedResponseFormat,
+          evaluationCriteria: task.evaluationCriteria
+            ? JSON.parse(task.evaluationCriteria)
             : undefined,
         },
         {
@@ -198,7 +202,7 @@ export class TasksService {
 
       const newAgentJob = this.agentJobRepository.create({
         bullJobId: `task-analysis:${job.id}`,
-        type: task.type === 'PROJECT' ? 'PROJECT_ANALYZER' : 'TASK_ANALYZER',
+        type: 'TASK_ANALYZER',
         status: 'QUEUED',
         referenceId: submission.id,
       });

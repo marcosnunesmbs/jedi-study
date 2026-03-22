@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { tasksApi } from '../api/tasks.api';
-import { ChevronLeft, CheckCircle, Info, RefreshCw, Send } from 'lucide-react';
+import { ChevronLeft, CheckCircle, Info, RefreshCw, Send, Lightbulb, ChevronDown, FileText } from 'lucide-react';
 
 export default function TaskPage() {
   const { taskId } = useParams<{ taskId: string }>();
@@ -11,6 +11,7 @@ export default function TaskPage() {
   const [submission, setSubmission] = useState('');
   const [submissionId, setSubmissionId] = useState<string | null>(null);
   const [hasLoadedInitial, setHasLoadedInitial] = useState(false);
+  const [showHints, setShowHints] = useState(false);
 
   const { data: task } = useQuery({
     queryKey: ['task', taskId],
@@ -67,6 +68,9 @@ export default function TaskPage() {
     if ((analysis as any)?.passed && (task as any)?.phaseId) {
       queryClient.invalidateQueries({ queryKey: ['phase', (task as any).phaseId] });
       queryClient.invalidateQueries({ queryKey: ['task', taskId] });
+      // Cascade: invalidate parent queries so SubjectPage and DashboardPage stay fresh
+      queryClient.invalidateQueries({ queryKey: ['study-path-active'] });
+      queryClient.invalidateQueries({ queryKey: ['subjects'] });
     }
   }, [analysis, (task as any)?.phaseId, taskId, queryClient]);
 
@@ -91,9 +95,54 @@ export default function TaskPage() {
         {/* Left Panel - Task Description */}
         <section style={{ width: '50%', overflowY: 'auto', padding: '2rem', borderRight: '1px solid var(--border-color)', backgroundColor: 'white' }}>
           <h1 style={{ fontSize: '1.875rem', fontWeight: 700, color: 'var(--text-slate-900)', marginBottom: '1rem' }}>{t?.title}</h1>
-          <div style={{ color: 'var(--text-slate-600)', lineHeight: 1.6, fontSize: '1rem', whiteSpace: 'pre-wrap' }}>
-            {t?.description}
+
+          {/* Task prompt (main content) */}
+          <div style={{ color: 'var(--text-slate-600)', lineHeight: 1.8, fontSize: '1rem', whiteSpace: 'pre-wrap' }}>
+            {t?.prompt || t?.description}
           </div>
+
+          {/* Expected response format */}
+          {t?.expectedResponseFormat && (
+            <div style={{ marginTop: '1.5rem', padding: '1rem', backgroundColor: 'rgba(99, 102, 241, 0.05)', borderRadius: '0.75rem', border: '1px solid rgba(99, 102, 241, 0.15)', display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+              <FileText size={18} style={{ color: '#6366f1', flexShrink: 0, marginTop: '0.125rem' }} />
+              <div>
+                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#6366f1', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Expected Response Format</div>
+                <div style={{ fontSize: '0.875rem', color: 'var(--text-slate-600)', lineHeight: 1.5 }}>{t.expectedResponseFormat}</div>
+              </div>
+            </div>
+          )}
+
+          {/* Hints (expandable) */}
+          {(() => {
+            const hints = t?.hints ? (typeof t.hints === 'string' ? JSON.parse(t.hints) : t.hints) : [];
+            if (!hints || hints.length === 0) return null;
+            return (
+              <div style={{ marginTop: '1rem' }}>
+                <button
+                  onClick={() => setShowHints(!showHints)}
+                  style={{
+                    background: 'none', border: '1px solid var(--border-color)', borderRadius: '0.5rem',
+                    padding: '0.5rem 0.75rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem',
+                    color: '#f59e0b', fontWeight: 600, fontSize: '0.875rem', width: '100%',
+                  }}
+                >
+                  <Lightbulb size={16} />
+                  {showHints ? 'Hide Hints' : `Show Hints (${hints.length})`}
+                  <ChevronDown size={16} style={{ marginLeft: 'auto', transform: showHints ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }} />
+                </button>
+                {showHints && (
+                  <ul style={{ listStyle: 'none', padding: 0, margin: '0.75rem 0 0 0', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    {hints.map((hint: string, i: number) => (
+                      <li key={i} style={{ padding: '0.75rem', backgroundColor: 'rgba(245, 158, 11, 0.05)', border: '1px solid rgba(245, 158, 11, 0.15)', borderRadius: '0.5rem', fontSize: '0.875rem', color: 'var(--text-slate-600)', display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+                        <Lightbulb size={14} style={{ color: '#f59e0b', flexShrink: 0, marginTop: '0.125rem' }} />
+                        {hint}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            );
+          })()}
 
           {a && (
             <div style={{ marginTop: '3rem', animation: 'slideUp 0.3s ease-out' }}>
@@ -142,6 +191,7 @@ export default function TaskPage() {
                 <p style={{ margin: 0, color: 'var(--text-slate-700)', fontSize: '0.875rem', lineHeight: 1.6 }}>{a.feedback}</p>
               </div>
 
+              {!a.passed && (
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
                 <button
                   onClick={() => { setSubmissionId(null); setSubmission(t?.submissions?.[0]?.content || ''); }}
@@ -149,9 +199,10 @@ export default function TaskPage() {
                   style={{ background: 'transparent', color: 'var(--text-slate-600)', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
                 >
                   <RefreshCw size={18} />
-                  {a.passed ? 'Submit Alternative Version' : 'Try Again'}
+                  Try Again
                 </button>
               </div>
+              )}
             </div>
           )}
         </section>
@@ -172,7 +223,7 @@ export default function TaskPage() {
               value={submission}
               onChange={(e) => setSubmission(e.target.value)}
               disabled={!!a || submissionId !== null}
-              placeholder={t?.type === 'PROJECT' ? '// Describe your project, share a GitHub link, or paste your code...' : '// Write your answer here...'}
+              placeholder="// Write your answer here..."
               spellCheck="false"
               style={{
                 width: '100%', height: '100%', backgroundColor: 'transparent', padding: '1.5rem',

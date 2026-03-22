@@ -24,7 +24,9 @@ interface TaskAnalysisJob {
   taskDescription: string;
   taskType: string;
   submissionContent: string;
-  projectContext?: Record<string, unknown>;
+  taskPrompt?: string;
+  expectedResponseFormat?: string;
+  evaluationCriteria?: string[];
 }
 
 @Processor('task-analysis')
@@ -50,7 +52,8 @@ export class TaskAnalysisProcessor {
   async handleAnalyze(job: Job<TaskAnalysisJob>) {
     const {
       submissionId, userId, taskId, phaseId, studyPathId, phaseOrder,
-      taskTitle, taskDescription, taskType, submissionContent, projectContext,
+      taskTitle, taskDescription, taskType, submissionContent,
+      taskPrompt, expectedResponseFormat, evaluationCriteria,
     } = job.data;
 
     this.logger.log(`Analyzing submission=${submissionId}`);
@@ -66,10 +69,9 @@ export class TaskAnalysisProcessor {
     );
 
     try {
-      const agentType = taskType === 'PROJECT' ? 'PROJECT_ANALYZER' : 'TASK_ANALYZER';
-      const agentTypeEnum = taskType === 'PROJECT' ? AgentType.PROJECT_ANALYZER : AgentType.TASK_ANALYZER;
+      const agentType = 'TASK_ANALYZER';
 
-      const modelConfig = await this.agentModelConfigService.findByAgentType(agentTypeEnum);
+      const modelConfig = await this.agentModelConfigService.findByAgentType(AgentType.TASK_ANALYZER);
       const model = modelConfig?.modelPrice?.name;
 
       const response = await this.agents.analyzeTask({
@@ -77,8 +79,10 @@ export class TaskAnalysisProcessor {
         taskDescription,
         taskType,
         submissionContent,
-        projectContext,
         model,
+        taskPrompt,
+        expectedResponseFormat,
+        evaluationCriteria,
       });
 
       // Record token usage

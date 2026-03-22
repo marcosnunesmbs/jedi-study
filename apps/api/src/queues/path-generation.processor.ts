@@ -4,7 +4,6 @@ import { Job } from 'bull';
 import { DataSource, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Phase } from '../database/entities/phase.entity';
-import { Task } from '../database/entities/task.entity';
 import { StudyPath } from '../database/entities/study-path.entity';
 import { AgentJob } from '../database/entities/agent-job.entity';
 import { AgentType } from '../database/entities/agent-model-config.entity';
@@ -88,21 +87,6 @@ export class PathGenerationProcessor {
             status: phaseData.order === 1 ? 'ACTIVE' : 'LOCKED',
           });
           await manager.save(Phase, phase);
-
-          for (const taskData of phaseData.tasks) {
-            const task = manager.create(Task, {
-              phaseId: phase.id,
-              order: taskData.order,
-              title: taskData.title,
-              description: taskData.description,
-              type: taskData.type,
-              maxScore: taskData.maxScore,
-              projectContext: taskData.projectContext
-                ? JSON.stringify(taskData.projectContext)
-                : null,
-            });
-            await manager.save(Task, task);
-          }
         }
 
         await manager.update(StudyPath, 

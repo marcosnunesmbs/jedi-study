@@ -14,7 +14,13 @@
       "Bash(npx typeorm-ts-node-commonjs:*)",
       "Bash(find /e/jedi-study/apps/agents -maxdepth 2 -name *.py -type f)",
       "Bash(find /e/jedi-study/apps/web/src -type f \\\\\\(-name *.ts -o -name *.tsx \\\\\\))",
-      "Bash(find /e/jedi-study/apps/agents/agents -type f -name *.py)"
+      "Bash(find /e/jedi-study/apps/agents/agents -type f -name *.py)",
+      "Bash(openspec instructions:*)",
+      "Bash(openspec status:*)",
+      "Bash(openspec new:*)",
+      "Bash(npm install:*)",
+      "Bash(find apps/api/src/database -name *.ts -type f)",
+      "Bash(npx tsc:*)"
     ]
   }
 }

@@ -36,6 +36,7 @@ export default function SubjectPage() {
     queryKey: ['study-path-active', subjectId],
     queryFn: () => studyPathsApi.getActive(subjectId!),
     retry: false,
+    refetchOnMount: 'always',
   });
 
   const updateMutation = useMutation({

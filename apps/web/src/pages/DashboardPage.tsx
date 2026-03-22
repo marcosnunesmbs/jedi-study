@@ -16,6 +16,7 @@ export default function DashboardPage() {
   const { data: subjects = [], isLoading } = useQuery({
     queryKey: ['subjects'],
     queryFn: () => subjectsApi.list(),
+    refetchOnMount: 'always',
   });
 
   const createMutation = useMutation({
@@ -81,8 +82,12 @@ export default function DashboardPage() {
           </p>
         </div>
         <div className="stat-card">
-          <p style={{ color: 'var(--text-slate-500)', fontSize: '0.875rem', fontWeight: 500, margin: '0 0 0.25rem 0' }}>Completion Rate</p>
-          <p style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: 0 }}>--</p>
+          <p style={{ color: 'var(--text-slate-500)', fontSize: '0.875rem', fontWeight: 500, margin: '0 0 0.25rem 0' }}>Avg. Progress</p>
+          <p style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: 0 }}>
+            {(subjects as any[]).length > 0
+              ? Math.round((subjects as any[]).reduce((sum: number, s: any) => sum + (s.progress ?? 0), 0) / (subjects as any[]).length)
+              : 0}%
+          </p>
         </div>
       </div>
 
@@ -173,12 +178,22 @@ export default function DashboardPage() {
 
               <div style={{ marginTop: 'auto' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.025em', marginBottom: '0.5rem' }}>
-                  <span style={{ color: 'var(--text-slate-400)' }}>Status</span>
-                  <span style={{ color: 'var(--text-slate-900)' }}>{subject.studyPaths?.[0]?.status || 'Ready'}</span>
+                  <span style={{ color: 'var(--text-slate-400)' }}>Progress</span>
+                  {subject.studyPaths?.[0]?.status === 'GENERATING' ? (
+                    <Loader2 size={14} className="animate-spin" style={{ color: 'var(--primary)' }} />
+                  ) : (
+                    <span style={{ color: 'var(--text-slate-900)' }}>{subject.progress ?? 0}%</span>
+                  )}
                 </div>
-                <div className="progress-bar-container">
-                  <div className="progress-bar-fill" style={{ width: subject.studyPaths?.length ? '10%' : '0%' }}></div>
-                </div>
+                {subject.studyPaths?.[0]?.status === 'GENERATING' ? (
+                  <div className="progress-bar-container">
+                    <div className="progress-bar-fill" style={{ width: '100%', opacity: 0.3, animation: 'pulse 1.5s ease-in-out infinite' }}></div>
+                  </div>
+                ) : (
+                  <div className="progress-bar-container">
+                    <div className="progress-bar-fill" style={{ width: `${subject.progress ?? 0}%` }}></div>
+                  </div>
+                )}
 
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '1rem', marginTop: '1rem', borderTop: '1px solid var(--border-color)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>

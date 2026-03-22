@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { BullModule } from '@nestjs/bull';
 import { PathGenerationProcessor } from './path-generation.processor';
 import { TaskAnalysisProcessor } from './task-analysis.processor';
+import { TaskGenerationProcessor } from './task-generation.processor';
 import { ContentProcessor } from './content.processor';
 import { AgentsModule } from '../modules/agents/agents.module';
 import { TokenUsageModule } from '../modules/token-usage/token-usage.module';
@@ -30,6 +31,7 @@ import { Content } from '../database/entities/content.entity';
     BullModule.registerQueue(
       { name: 'path-generation' },
       { name: 'task-analysis' },
+      { name: 'task-generation' },
       { name: 'content-generation' },
     ),
     AgentsModule,
@@ -40,6 +42,7 @@ import { Content } from '../database/entities/content.entity';
   providers: [
     PathGenerationProcessor,
     TaskAnalysisProcessor,
+    TaskGenerationProcessor,
     ContentProcessor,
   ],
 })

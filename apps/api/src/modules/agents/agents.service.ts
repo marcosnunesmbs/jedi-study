@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
-import type { AgentResponse, StudyPathOutput, TaskAnalysisOutput, ProjectAnalysisOutput, SafetyOutput } from '../../shared';
+import type { AgentResponse, StudyPathOutput, TaskAnalysisOutput, SafetyOutput, TaskGenerationOutput } from '../../shared';
 
 export interface GeneratePathPayload {
   subjectTitle: string;
@@ -26,7 +26,19 @@ export interface AnalyzeTaskPayload {
   taskDescription: string;
   taskType: string;
   submissionContent: string;
-  projectContext?: Record<string, unknown>;
+  model?: string;
+  taskPrompt?: string;
+  expectedResponseFormat?: string;
+  evaluationCriteria?: string[];
+}
+
+export interface GenerateTasksPayload {
+  phaseTitle: string;
+  phaseDescription: string;
+  topics: string[];
+  objectives: string[];
+  skillLevel: string;
+  contents: Array<{ title: string; topic: string; body: string }>;
   model?: string;
 }
 
@@ -79,15 +91,22 @@ export class AgentsService {
 
   async analyzeTask(
     payload: AnalyzeTaskPayload,
-  ): Promise<AgentResponse<TaskAnalysisOutput | ProjectAnalysisOutput>> {
-    const endpoint =
-      payload.taskType === 'PROJECT'
-        ? '/agents/project-analyzer'
-        : '/agents/task-analyzer';
-
+  ): Promise<AgentResponse<TaskAnalysisOutput>> {
     const { data } = await firstValueFrom(
-      this.http.post<AgentResponse<TaskAnalysisOutput | ProjectAnalysisOutput>>(
-        endpoint,
+      this.http.post<AgentResponse<TaskAnalysisOutput>>(
+        '/agents/task-analyzer',
+        payload,
+      ),
+    );
+    return data;
+  }
+
+  async generateTasks(
+    payload: GenerateTasksPayload,
+  ): Promise<AgentResponse<TaskGenerationOutput>> {
+    const { data } = await firstValueFrom(
+      this.http.post<AgentResponse<TaskGenerationOutput>>(
+        '/agents/task-generator',
         payload,
       ),
     );

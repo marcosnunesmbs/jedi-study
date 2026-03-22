@@ -26,14 +26,23 @@ export class Task {
   @Column({ type: 'text' })
   description: string;
 
-  @Column({ default: 'EXERCISE' })
+  @Column({ default: 'CONCEPTUAL' })
   type: string;
 
   @Column({ default: 'PENDING' })
   status: string;
 
   @Column({ type: 'text', nullable: true })
-  projectContext: string; // JSON string
+  prompt: string;
+
+  @Column({ nullable: true })
+  expectedResponseFormat: string;
+
+  @Column({ type: 'text', nullable: true })
+  evaluationCriteria: string; // JSON string
+
+  @Column({ type: 'text', nullable: true })
+  hints: string; // JSON string
 
   @Column({ default: 100 })
   maxScore: number;

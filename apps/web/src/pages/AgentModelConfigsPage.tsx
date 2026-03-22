@@ -10,7 +10,7 @@ const AGENT_TYPE_LABELS: Record<string, string> = {
   CONTENT_GEN: 'Content Generator',
   PATH_GENERATOR: 'Path Generator',
   TASK_ANALYZER: 'Task Analyzer',
-  PROJECT_ANALYZER: 'Project Analyzer',
+  TASK_GENERATOR: 'Task Generator',
   SAFETY: 'Safety Checker',
 };
 

@@ -10,10 +10,18 @@ async def analyze_task(
     task_description: str,
     submission: str,
     model: str = "",
+    task_prompt: str = "",
+    expected_response_format: str = "",
+    evaluation_criteria: list[str] = None,
 ) -> AgentResponse:
     client = get_client()
-    prompt = build_prompt(task_title, task_description, submission)
-    
+    prompt = build_prompt(
+        task_title, task_description, submission,
+        task_prompt=task_prompt,
+        expected_response_format=expected_response_format,
+        evaluation_criteria=evaluation_criteria,
+    )
+
     model_name = model or settings.gemini_model
 
     start_time = time.time()

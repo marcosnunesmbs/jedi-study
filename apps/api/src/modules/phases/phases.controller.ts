@@ -1,4 +1,4 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Post, Param } from '@nestjs/common';
 import { PhasesService } from './phases.service';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
@@ -9,5 +9,10 @@ export class PhasesController {
   @Get(':id')
   findOne(@Param('id') id: string, @CurrentUser() user: any) {
     return this.phases.findOne(id, user.id);
+  }
+
+  @Post(':id/generate-tasks')
+  generateTasks(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.phases.generateTasks(id, user.id);
   }
 }

@@ -2,7 +2,7 @@ export type AgentType =
   | 'PATH_GENERATOR'
   | 'CONTENT_GEN'
   | 'TASK_ANALYZER'
-  | 'PROJECT_ANALYZER'
+  | 'TASK_GENERATOR'
   | 'SAFETY';
 
 export interface SafetyOutput {

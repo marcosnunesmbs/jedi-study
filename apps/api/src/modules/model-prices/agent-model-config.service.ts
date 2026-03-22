@@ -78,7 +78,7 @@ export class AgentModelConfigService {
       { agentType: AgentType.CONTENT_GEN, modelName: 'gemini-2.5-flash-lite-preview' },
       { agentType: AgentType.PATH_GENERATOR, modelName: 'gemini-1.5-pro' },
       { agentType: AgentType.TASK_ANALYZER, modelName: 'gemini-1.5-flash' },
-      { agentType: AgentType.PROJECT_ANALYZER, modelName: 'gemini-1.5-flash' },
+      { agentType: AgentType.TASK_GENERATOR, modelName: 'gemini-1.5-flash' },
       { agentType: AgentType.SAFETY, modelName: 'gemini-2.5-flash-lite-preview' },
     ];
 

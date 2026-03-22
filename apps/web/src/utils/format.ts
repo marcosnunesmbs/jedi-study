@@ -4,7 +4,7 @@ export const AGENT_LABELS: Record<string, string> = {
   PATH_GENERATOR: 'Path Generator',
   CONTENT_GEN: 'Content Gen',
   TASK_ANALYZER: 'Task Analyzer',
-  PROJECT_ANALYZER: 'Project Analyzer',
+  TASK_GENERATOR: 'Task Generator',
   SAFETY: 'Safety',
 };
 

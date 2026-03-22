@@ -1,8 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
 import { Phase } from '../../database/entities/phase.entity';
 import { StudyPath } from '../../database/entities/study-path.entity';
+import { AgentJob } from '../../database/entities/agent-job.entity';
 
 @Injectable()
 export class PhasesService {
@@ -11,6 +14,10 @@ export class PhasesService {
     private readonly phaseRepository: Repository<Phase>,
     @InjectRepository(StudyPath)
     private readonly studyPathRepository: Repository<StudyPath>,
+    @InjectRepository(AgentJob)
+    private readonly agentJobRepository: Repository<AgentJob>,
+    @InjectQueue('task-generation')
+    private readonly taskGenerationQueue: Queue,
   ) {}
 
   async findOne(id: string, userId: string) {
@@ -81,5 +88,62 @@ export class PhasesService {
       { id },
       { status: 'COMPLETED' },
     );
+  }
+
+  async generateTasks(phaseId: string, userId: string) {
+    const phase = await this.phaseRepository.findOne({
+      where: { id: phaseId },
+      relations: ['studyPath', 'tasks', 'contents'],
+    });
+
+    if (!phase || phase.studyPath.userId !== userId) {
+      throw new NotFoundException('Phase not found');
+    }
+
+    if (phase.status !== 'ACTIVE') {
+      throw new BadRequestException('Phase must be ACTIVE to generate tasks');
+    }
+
+    if (phase.tasks && phase.tasks.length > 0) {
+      throw new BadRequestException('Tasks already generated for this phase');
+    }
+
+    // Check topic coverage
+    const topics: string[] = typeof phase.topics === 'string' ? JSON.parse(phase.topics) : (phase.topics || []);
+    const completeContents = (phase.contents || []).filter((c: any) => c.status === 'COMPLETE' && c.topic);
+    const coveredTopics = new Set(completeContents.map((c: any) => c.topic));
+    const uncoveredTopics = topics.filter((t) => !coveredTopics.has(t));
+
+    if (uncoveredTopics.length > 0) {
+      throw new BadRequestException(
+        `Missing content for topics: ${uncoveredTopics.join(', ')}`,
+      );
+    }
+
+    // Enqueue task generation job
+    const job = await this.taskGenerationQueue.add(
+      'generate',
+      {
+        phaseId,
+        userId,
+        studyPathId: phase.studyPathId,
+      },
+      {
+        attempts: 3,
+        backoff: { type: 'exponential', delay: 1000 },
+        timeout: 120000,
+      },
+    );
+
+    // Create agent job record
+    const agentJob = this.agentJobRepository.create({
+      bullJobId: `task-generation:${job.id}`,
+      type: 'TASK_GENERATOR',
+      status: 'QUEUED',
+      referenceId: phaseId,
+    });
+    await this.agentJobRepository.save(agentJob);
+
+    return { jobId: String(job.id) };
   }
 }

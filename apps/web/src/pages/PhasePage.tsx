@@ -3,7 +3,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useEffect, useRef } from 'react';
 import { phasesApi } from '../api/phases.api';
 import { contentApi } from '../api/content.api';
-import { ChevronLeft, Radar, CheckCircle, Sparkles, BookOpen, Code, Rocket, HelpCircle, ClipboardList, ChevronRight, FileText, Hourglass, AlertCircle, ChevronDown, Layers, MessageSquareText, Loader2 } from 'lucide-react';
+import confetti from 'canvas-confetti';
+import { ChevronLeft, Radar, CheckCircle, Sparkles, BookOpen, Code, HelpCircle, ClipboardList, ChevronRight, FileText, Hourglass, ChevronDown, Layers, MessageSquareText, Loader2, Trophy, ArrowRight, PartyPopper, Brain, ListChecks, Swords, Zap } from 'lucide-react';
 
 const STATUS_COLOR: Record<string, string> = {
   COMPLETE: '#10b981',
@@ -38,6 +39,9 @@ export default function PhasePage() {
   const [customPrompt, setCustomPrompt] = useState('');
   const hasTriggeredPrompt = useRef<string | null>(null);
   const [expandedTopics, setExpandedTopics] = useState<Record<string, boolean>>({});
+  const [showCelebration, setShowCelebration] = useState(false);
+  const prevPhaseStatus = useRef<string | null>(null);
+  const [awaitingTasks, setAwaitingTasks] = useState(false);
 
   const { data: phase, isLoading } = useQuery({
     queryKey: ['phase', phaseId],
@@ -46,8 +50,9 @@ export default function PhasePage() {
     staleTime: 0,
     refetchInterval: (query) => {
       const p = query.state.data as any;
-      const hasPending = p?.contents?.some((c: any) => c.status !== 'COMPLETE' && c.status !== 'ERROR');
-      return hasPending ? 3000 : false;
+      const hasPendingContent = p?.contents?.some((c: any) => c.status !== 'COMPLETE' && c.status !== 'ERROR');
+      const stillAwaiting = awaitingTasks && (!p?.tasks || p.tasks.length === 0);
+      return (hasPendingContent || stillAwaiting) ? 3000 : false;
     }
   });
 
@@ -73,12 +78,69 @@ export default function PhasePage() {
     }
   }, [location.state, phaseId, navigate, queryClient]);
 
+  // Detect phase completion and trigger celebration
+  useEffect(() => {
+    const p = phase as any;
+    if (!p) return;
+
+    const celebratedKey = `phase-celebrated-${phaseId}`;
+    const alreadyCelebrated = sessionStorage.getItem(celebratedKey);
+
+    if (
+      prevPhaseStatus.current &&
+      prevPhaseStatus.current !== 'COMPLETED' &&
+      p.status === 'COMPLETED' &&
+      !alreadyCelebrated
+    ) {
+      sessionStorage.setItem(celebratedKey, 'true');
+      setShowCelebration(true);
+      // Fire confetti
+      const duration = 3000;
+      const end = Date.now() + duration;
+      const frame = () => {
+        confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0 } });
+        confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1 } });
+        if (Date.now() < end) requestAnimationFrame(frame);
+      };
+      frame();
+    }
+
+    prevPhaseStatus.current = p.status;
+  }, [(phase as any)?.status]);
+
+  const generateTasksMutation = useMutation({
+    mutationFn: () => phasesApi.generateTasks(phaseId!),
+    onSuccess: () => {
+      setAwaitingTasks(true);
+      queryClient.invalidateQueries({ queryKey: ['phase', phaseId] });
+    },
+  });
+
+  // Stop polling once tasks appear
+  useEffect(() => {
+    const p = phase as any;
+    if (awaitingTasks && p?.tasks?.length > 0) {
+      setAwaitingTasks(false);
+    }
+  }, [(phase as any)?.tasks?.length, awaitingTasks]);
+
   const p = phase as any;
   const TASK_TYPE_ICON: Record<string, any> = {
-    READING: <BookOpen size={20} />, 
-    EXERCISE: <Code size={20} />, 
-    PROJECT: <Rocket size={20} />, 
+    CONCEPTUAL: <Brain size={20} />,
+    CODE_CHALLENGE: <Code size={20} />,
+    ANALYTICAL: <Swords size={20} />,
+    MULTI_QUESTION: <ListChecks size={20} />,
+    // Legacy types
+    READING: <BookOpen size={20} />,
+    EXERCISE: <Code size={20} />,
     QUIZ: <HelpCircle size={20} />,
+  };
+
+  const TASK_TYPE_COLORS: Record<string, { bg: string; color: string }> = {
+    CONCEPTUAL: { bg: 'rgba(99, 102, 241, 0.1)', color: '#6366f1' },
+    CODE_CHALLENGE: { bg: 'rgba(16, 185, 129, 0.1)', color: '#10b981' },
+    ANALYTICAL: { bg: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' },
+    MULTI_QUESTION: { bg: 'rgba(124, 58, 237, 0.1)', color: '#7c3aed' },
   };
 
   const toggleTopic = (topic: string) => {
@@ -90,7 +152,15 @@ export default function PhasePage() {
 
   const topics = p.topics || [];
   const contents = p.contents || [];
-  
+
+  // Topic coverage: each topic needs at least 1 COMPLETE content
+  const topicsCovered = topics.filter((t: string) =>
+    contents.some((c: any) => c.topic === t && c.status === 'COMPLETE')
+  );
+  const allTopicsCovered = topics.length > 0 && topicsCovered.length === topics.length;
+  const hasTasks = p.tasks && p.tasks.length > 0;
+  const canGenerateTasks = allTopicsCovered && !hasTasks && p.status === 'ACTIVE';
+
   // Group contents
   const contentsByTopic: Record<string, any[]> = {};
   const standardGeneralContents: any[] = [];
@@ -121,6 +191,58 @@ export default function PhasePage() {
         <h1 style={{ fontSize: '2.25rem', fontWeight: 'bold', color: 'var(--text-slate-900)', margin: '0.25rem 0 0.5rem 0' }}>{p.title}</h1>
         <p style={{ color: 'var(--text-slate-500)', fontSize: '1rem', lineHeight: 1.6, maxWidth: '48rem', margin: 0 }}>{p.description}</p>
       </div>
+
+      {/* Progress Bar */}
+      {p.tasks && p.tasks.length > 0 && (() => {
+        const passedCount = p.tasks.filter((t: any) => t.status === 'PASSED').length;
+        const totalCount = p.tasks.length;
+        const pct = Math.round((passedCount / totalCount) * 100);
+        return (
+          <div className="card" style={{ padding: '1.25rem', marginBottom: '2rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+              <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-slate-700)' }}>Phase Progress</span>
+              <span style={{ fontSize: '0.875rem', fontWeight: 700, color: pct === 100 ? '#10b981' : 'var(--text-slate-900)' }}>{passedCount}/{totalCount} tasks ({pct}%)</span>
+            </div>
+            <div style={{ width: '100%', height: '0.5rem', backgroundColor: 'var(--surface)', borderRadius: '1rem', overflow: 'hidden' }}>
+              <div style={{
+                width: `${pct}%`,
+                height: '100%',
+                backgroundColor: pct === 100 ? '#10b981' : 'var(--primary)',
+                borderRadius: '1rem',
+                transition: 'width 0.5s ease-out',
+              }} />
+            </div>
+            {pct === 100 && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '0.75rem', padding: '0.75rem 1rem', backgroundColor: 'rgba(16, 185, 129, 0.05)', borderRadius: '0.5rem', border: '1px solid rgba(16, 185, 129, 0.15)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Trophy size={18} style={{ color: '#10b981' }} />
+                  <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#059669' }}>Congratulations! You completed this phase!</span>
+                </div>
+                <button
+                  onClick={() => {
+                    const duration = 3000;
+                    const end = Date.now() + duration;
+                    const frame = () => {
+                      confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0 } });
+                      confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1 } });
+                      if (Date.now() < end) requestAnimationFrame(frame);
+                    };
+                    frame();
+                  }}
+                  style={{
+                    background: 'none', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '0.5rem',
+                    padding: '0.375rem 0.75rem', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600,
+                    color: '#059669', display: 'flex', alignItems: 'center', gap: '0.375rem',
+                  }}
+                >
+                  <PartyPopper size={14} />
+                  Celebrate!
+                </button>
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {p.objectives && (
         <div className="card" style={{ padding: '1.5rem', marginBottom: '2.5rem' }}>
@@ -171,6 +293,13 @@ export default function PhasePage() {
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-slate-500)', backgroundColor: 'white', padding: '0.125rem 0.5rem', borderRadius: '1rem', border: '1px solid var(--border-color)' }}>
                       {topicContents.length}
                     </span>
+                    {topicContents.some((c: any) => c.status === 'COMPLETE') ? (
+                      <CheckCircle size={16} style={{ color: '#10b981' }} />
+                    ) : (
+                      <span style={{ fontSize: '0.625rem', color: '#f59e0b', fontWeight: 600, backgroundColor: 'rgba(245, 158, 11, 0.1)', padding: '0.125rem 0.5rem', borderRadius: '1rem' }}>
+                        Not studied
+                      </span>
+                    )}
                   </div>
                   <ChevronDown size={20} style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s', color: 'var(--text-slate-400)' }} />
                 </div>
@@ -350,51 +479,205 @@ export default function PhasePage() {
         )}
       </div>
 
-      {/* 3. Tasks & Exercises */}
+      {/* 3. Challenges */}
       <div>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-slate-900)', margin: '0 0 1.5rem 0' }}>Tasks & Exercises</h2>
-        <div style={{ display: 'grid', gap: '0.75rem' }}>
-          {(p.tasks || []).map((task: any) => (
-            <div
-              key={task.id}
-              className="card"
-              onClick={() => navigate(`/tasks/${task.id}`)}
-              style={{
-                padding: '1rem 1.25rem',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                cursor: 'pointer',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <div style={{ 
-                  width: '2.5rem', height: '2.5rem', borderRadius: '0.5rem', 
-                  backgroundColor: 'var(--surface)', color: 'var(--text-slate-600)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center'
-                }}>
-                  {TASK_TYPE_ICON[task.type] || <ClipboardList size={20} />}
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-slate-900)', margin: '0 0 1.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <Zap size={24} style={{ color: 'var(--primary)' }} />
+          Challenges
+        </h2>
+
+        {hasTasks ? (
+          <div style={{ display: 'grid', gap: '0.75rem' }}>
+            {p.tasks.map((task: any) => {
+              const typeStyle = TASK_TYPE_COLORS[task.type] || { bg: 'var(--surface)', color: 'var(--text-slate-500)' };
+              return (
+                <div
+                  key={task.id}
+                  className="card"
+                  onClick={() => navigate(`/tasks/${task.id}`)}
+                  style={{
+                    padding: '1rem 1.25rem',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <div style={{
+                      width: '2.5rem', height: '2.5rem', borderRadius: '0.5rem',
+                      backgroundColor: typeStyle.bg, color: typeStyle.color,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center'
+                    }}>
+                      {TASK_TYPE_ICON[task.type] || <ClipboardList size={20} />}
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: 600, color: 'var(--text-slate-900)', marginBottom: '0.25rem' }}>{task.title}</div>
+                      <span style={{
+                        fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em',
+                        padding: '0.125rem 0.5rem', borderRadius: '1rem',
+                        backgroundColor: typeStyle.bg, color: typeStyle.color,
+                      }}>
+                        {task.type.replace('_', ' ')}
+                      </span>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <span className="badge" style={{ backgroundColor: STATUS_BG[task.status] || 'var(--surface)', color: STATUS_COLOR[task.status] || 'var(--text-slate-500)' }}>
+                      {task.status}
+                    </span>
+                    <ChevronRight size={20} style={{ color: 'var(--text-slate-400)' }} />
+                  </div>
                 </div>
-                <div>
-                  <div style={{ fontWeight: 600, color: 'var(--text-slate-900)', marginBottom: '0.125rem' }}>{task.title}</div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-slate-500)', textTransform: 'capitalize' }}>{task.type.toLowerCase()}</div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="card" style={{ padding: '2rem', textAlign: 'center' }}>
+            {!allTopicsCovered ? (
+              <>
+                <div style={{ marginBottom: '1rem' }}>
+                  <Zap size={32} style={{ color: 'var(--text-slate-300)' }} />
                 </div>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <span className="badge" style={{ backgroundColor: STATUS_BG[task.status] || 'var(--surface)', color: STATUS_COLOR[task.status] || 'var(--text-slate-500)' }}>
-                  {task.status}
-                </span>
-                <ChevronRight size={20} style={{ color: 'var(--text-slate-400)' }} />
-              </div>
-            </div>
-          ))}
-          {(!p.tasks || p.tasks.length === 0) && (
-            <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-slate-500)', border: '1px dashed var(--border-color)', borderRadius: '0.75rem' }}>
-              No tasks available for this phase.
-            </div>
-          )}
-        </div>
+                <p style={{ fontWeight: 600, color: 'var(--text-slate-700)', margin: '0 0 0.5rem 0' }}>
+                  Study all topics to unlock challenges
+                </p>
+                <p style={{ fontSize: '0.875rem', color: 'var(--text-slate-500)', margin: '0 0 1rem 0' }}>
+                  Generate at least one content for each topic before generating your challenges.
+                </p>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  {topics.map((topic: string, i: number) => {
+                    const covered = contents.some((c: any) => c.topic === topic && c.status === 'COMPLETE');
+                    return (
+                      <span key={i} style={{
+                        fontSize: '0.75rem', padding: '0.25rem 0.75rem', borderRadius: '1rem',
+                        backgroundColor: covered ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)',
+                        color: covered ? '#10b981' : '#f59e0b',
+                        fontWeight: 600,
+                        display: 'flex', alignItems: 'center', gap: '0.25rem',
+                      }}>
+                        {covered ? <CheckCircle size={12} /> : null}
+                        {topic}
+                      </span>
+                    );
+                  })}
+                </div>
+              </>
+            ) : generateTasksMutation.isPending || generateTasksMutation.isSuccess ? (
+              <>
+                <Loader2 size={32} className="animate-spin" style={{ color: 'var(--primary)', marginBottom: '1rem' }} />
+                <p style={{ fontWeight: 600, color: 'var(--text-slate-700)', margin: '0 0 0.5rem 0' }}>
+                  Generating your challenges...
+                </p>
+                <p style={{ fontSize: '0.875rem', color: 'var(--text-slate-500)', margin: 0 }}>
+                  Our AI is crafting personalized challenges based on your study content.
+                </p>
+              </>
+            ) : (
+              <>
+                <div style={{ marginBottom: '1rem' }}>
+                  <Zap size={32} style={{ color: 'var(--primary)' }} />
+                </div>
+                <p style={{ fontWeight: 600, color: 'var(--text-slate-700)', margin: '0 0 0.5rem 0' }}>
+                  All topics covered! Ready to test your knowledge.
+                </p>
+                <p style={{ fontSize: '0.875rem', color: 'var(--text-slate-500)', margin: '0 0 1.5rem 0' }}>
+                  Generate challenges based on everything you've studied in this phase.
+                </p>
+                <button
+                  className="btn-primary"
+                  onClick={() => generateTasksMutation.mutate()}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.5rem', fontSize: '1rem' }}
+                >
+                  <Zap size={20} />
+                  Generate My Challenges
+                </button>
+                {generateTasksMutation.isError && (
+                  <p style={{ color: '#ef4444', fontSize: '0.875rem', marginTop: '1rem' }}>
+                    Failed to generate challenges. Please try again.
+                  </p>
+                )}
+              </>
+            )}
+          </div>
+        )}
       </div>
+
+      {/* Celebration Modal */}
+      {showCelebration && (() => {
+        const passedTasks = (p.tasks || []).filter((t: any) => t.status === 'PASSED');
+        const totalTasks = (p.tasks || []).length;
+        const submissions = passedTasks.flatMap((t: any) => (t.submissions || []).filter((s: any) => s.analysis?.score != null));
+        const avgScore = submissions.length > 0
+          ? Math.round(submissions.reduce((sum: number, s: any) => sum + s.analysis.score, 0) / submissions.length)
+          : null;
+        const isLastPhase = p.studyPath && p.order >= p.studyPath.totalPhases;
+        const subjectId = p.studyPath?.subjectId;
+
+        return (
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, animation: 'fadeIn 0.3s ease-out' }}>
+            <div className="card" style={{ padding: '2.5rem', maxWidth: '480px', width: '90%', textAlign: 'center', animation: 'slideUp 0.4s ease-out' }}>
+              <div style={{ width: '4rem', height: '4rem', borderRadius: '50%', backgroundColor: 'rgba(16, 185, 129, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem auto' }}>
+                <Trophy size={32} style={{ color: '#10b981' }} />
+              </div>
+
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-slate-900)', margin: '0 0 0.5rem 0' }}>
+                {isLastPhase ? 'Study Path Complete!' : 'Phase Complete!'}
+              </h2>
+              <p style={{ color: 'var(--text-slate-500)', margin: '0 0 1.5rem 0', fontSize: '0.875rem' }}>
+                {isLastPhase
+                  ? 'Congratulations! You have completed all phases of this study path!'
+                  : `Great job completing Phase ${p.order} — ${p.title}!`}
+              </p>
+
+              <div style={{ display: 'grid', gridTemplateColumns: avgScore != null ? '1fr 1fr' : '1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+                <div style={{ padding: '1rem', backgroundColor: 'rgba(16, 185, 129, 0.05)', borderRadius: '0.75rem', border: '1px solid rgba(16, 185, 129, 0.15)' }}>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#10b981' }}>{passedTasks.length}/{totalTasks}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-slate-500)', fontWeight: 500 }}>Tasks Completed</div>
+                </div>
+                {avgScore != null && (
+                  <div style={{ padding: '1rem', backgroundColor: 'rgba(124, 58, 237, 0.05)', borderRadius: '0.75rem', border: '1px solid rgba(124, 58, 237, 0.15)' }}>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--primary)' }}>{avgScore}<span style={{ fontSize: '0.875rem', fontWeight: 400 }}>/100</span></div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-slate-500)', fontWeight: 500 }}>Avg. Score</div>
+                  </div>
+                )}
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
+                <button
+                  onClick={() => setShowCelebration(false)}
+                  style={{ padding: '0.625rem 1.25rem', background: 'transparent', border: '1px solid var(--border-color)', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 500, color: 'var(--text-slate-600)', fontSize: '0.875rem' }}
+                >
+                  Close
+                </button>
+                <button
+                  className="btn-primary"
+                  onClick={() => {
+                    setShowCelebration(false);
+                    if (isLastPhase && subjectId) {
+                      navigate(`/subjects/${subjectId}`);
+                    } else if (subjectId) {
+                      // Navigate to subject page where user can access the next unlocked phase
+                      navigate(`/subjects/${subjectId}`);
+                    }
+                  }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.625rem 1.25rem', fontSize: '0.875rem' }}
+                >
+                  {isLastPhase ? 'Back to Subject' : 'Next Phase'}
+                  <ArrowRight size={18} />
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      <style>{`
+        @keyframes slideUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </div>
   );
 }

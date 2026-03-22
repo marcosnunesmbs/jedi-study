@@ -1,20 +1,24 @@
 import time
 from agents.base import AgentResponse, build_usage, get_client
-from agents.project_analyzer.output_schema import ProjectAnalysisOutput
-from agents.project_analyzer.prompts import SYSTEM_PROMPT, build_prompt
+from agents.task_generator.output_schema import TaskGenerationOutput
+from agents.task_generator.prompts import SYSTEM_PROMPT, build_prompt
 from config import settings
 
 
-async def analyze_project(
-    task_title: str,
-    task_description: str,
-    submission: str,
-    project_context: dict = None,
+async def generate_tasks(
+    phase_title: str,
+    phase_description: str,
+    topics: list[str],
+    objectives: list[str],
+    skill_level: str,
+    contents: list[dict],
     model: str = "",
 ) -> AgentResponse:
     client = get_client()
-    prompt = build_prompt(task_title, task_description, submission, project_context)
-    
+    prompt = build_prompt(
+        phase_title, phase_description, topics, objectives, skill_level, contents
+    )
+
     model_name = model or settings.gemini_model
 
     start_time = time.time()
@@ -24,12 +28,12 @@ async def analyze_project(
         config={
             "system_instruction": SYSTEM_PROMPT,
             "response_mime_type": "application/json",
-            "response_json_schema": ProjectAnalysisOutput.model_json_schema(),
-            "temperature": 0.3,
+            "response_json_schema": TaskGenerationOutput.model_json_schema(),
+            "temperature": 0.5,
         },
     )
 
-    output = ProjectAnalysisOutput.model_validate_json(response.text)
+    output = TaskGenerationOutput.model_validate_json(response.text)
     usage = build_usage(response, start_time, model_name=model_name)
 
     return AgentResponse(data=output.model_dump(), usage=usage)
